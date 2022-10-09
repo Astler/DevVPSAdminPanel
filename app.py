@@ -1,4 +1,5 @@
 from flask import Flask
+import os.path
 
 app = Flask(__name__)
 
@@ -15,8 +16,7 @@ def me():
 
 @app.route('/.well-known/pki-validation/948281C097CA441852C3AB70F8720614.txt')
 def verification():
-    path = '/var/www/html/.well-known/pki-validation/948281C097CA441852C3AB70F8720614.txt'
-    read = open(path, 'r')
+    read = open("948281C097CA441852C3AB70F8720614.txt", 'r')
     data = read.read()
     read.close()
     return data

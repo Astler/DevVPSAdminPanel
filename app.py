@@ -15,7 +15,7 @@ def me():
 
 @app.route('/.well-known/pki-validation/948281C097CA441852C3AB70F8720614.txt')
 def verification():
-    path = '/root/var/www/html/.well-known/pki-validation/948281C097CA441852C3AB70F8720614.txt'
+    path = '/var/www/html/.well-known/pki-validation/948281C097CA441852C3AB70F8720614.txt'
     read = open(path, 'r')
     data = read.read()
     read.close()

@@ -1,8 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
+
+from banners.banners_commands import banners_api
 
 app = Flask(__name__)
 
-from banners.banners_commands import app
+app.register_blueprint(banners_api)
 
 
 @app.route('/')

@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return 'Hello to Flask!'
+    return 'Hello my friend!'
 
 
 @app.route('/me', methods=['GET'])
@@ -17,12 +17,6 @@ def me():
 def search():
     args = request.args
     return args
-
-
-@app.route('/foo', methods=['POST'])
-def foo():
-    data = request.json
-    return jsonify(data)
 
 
 if __name__ == "__main__":

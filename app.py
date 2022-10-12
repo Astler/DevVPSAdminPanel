@@ -8,9 +8,9 @@ def index():
     return 'Hello to Flask!'
 
 
-@app.route('/me')
+@app.route('/me', methods=['GET'])
 def me():
-    return "astler!"
+    return """{"name":"astler!"}"""
 
 
 @app.route('/test_get', methods=['GET'])

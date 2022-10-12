@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BOT_TOKEN = os.getenv("TOKEN_KEY")
+MY_PROFILE_ID = os.getenv("MY_PROFILE_ID")
 
 API_ID = os.getenv("API_ID")
 API_HASH = os.getenv("API_HASH")
@@ -17,7 +18,10 @@ FTP_URL = os.getenv('FTP_URL')
 FTP_USER = os.getenv('FTP_USER')
 FTP_PASS = os.getenv('FTP_PASS')
 
-BANNERS_MAP_FILE = os.getenv('BANNERS_MAP_FILE')
+BE_BANNERS_MAP = os.getenv('BE_BANNERS_MAP')
+BE_SERVER_SAVES = os.getenv('BE_SERVER_SAVES')
+BE_MAP_UPDATE_HOURS = os.getenv('BE_MAP_UPDATE_HOURS')
+
 BE_VERSIONS_FILE = os.getenv('BE_VERSIONS_FILE')
 APPS_DATA_ROOT_URL = os.getenv('APPS_DATA_ROOT_URL')
 

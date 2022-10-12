@@ -1,10 +1,14 @@
+import time
+
 import firebase_admin
 import simplejson as json
 from firebase_admin import credentials, firestore
 from flask import Blueprint
+import os
 
-from banners.data import get_cer_data
-from config import PROJECT_ID, BANNERS_MAP_FILE
+from banners.data import get_cer_data, check_file_by_path, get_last_update_time, set_last_update_time, \
+    send_telegram_msg_to_me
+from config import PROJECT_ID, BE_BANNERS_MAP, BE_MAP_UPDATE_HOURS
 
 banners_api = Blueprint('banners_api', __name__)
 
@@ -17,12 +21,26 @@ class BannerServerItem:
 
 @banners_api.route('/get_all_banners', methods=['GET'])
 def get_banners():
-    update_server_banners_map()
-    return """All banners!"""
+    if time.time() >= get_last_update_time() + float(BE_MAP_UPDATE_HOURS) * 60 * 60:
+        if os.path.exists(BE_BANNERS_MAP):
+            os.remove(BE_BANNERS_MAP)
+
+        send_telegram_msg_to_me("Banners map create request!")
+
+        set_last_update_time()
+        data = update_server_banners_map()
+    else:
+        send_telegram_msg_to_me("Loading?!")
+        data = check_file_by_path(BE_BANNERS_MAP, "r").read()
+
+    return data
 
 
-def update_server_banners_map():
-    # msg = await bot.send_message(message.chat.id, "Подключаюсь к Firebase...")
+def update_server_banners_map() -> str:
+    file = check_file_by_path(BE_BANNERS_MAP, "w")
+
+    send_telegram_msg_to_me("Подключаюсь к Firebase...")
+
     cred = credentials.Certificate(get_cer_data())
 
     firebase_admin.initialize_app(cred, {
@@ -31,7 +49,7 @@ def update_server_banners_map():
 
     db = firestore.client()
 
-    # await msg.edit_text("Готово! Получаю баннеры...")
+    send_telegram_msg_to_me("Готово! Получаю баннеры...")
 
     users_ref = db.collection(u'shared_banners')
     docs = users_ref.stream()
@@ -56,17 +74,9 @@ def update_server_banners_map():
     json_data = json.JSONEncoder(default=encode_complex, sort_keys=True, indent=4 * ' ', ensure_ascii=False) \
         .encode(items)
 
-    f = open(BANNERS_MAP_FILE, "w", encoding='utf-8')
-    f.write(json_data)
-    f.close()
+    file.write(json_data)
+    file.close()
 
-    # await msg.edit_text(f"Для загрузки найдено {len(items)} баннеров!", reply_markup=publish_keyboard())
+    send_telegram_msg_to_me(f"Найдено {len(items)} баннеров!")
 
-    # async with state.proxy() as data:
-    #     data['request_id'] = msg.message_id
-
-    f = open(BANNERS_MAP_FILE, "w", encoding='utf-8')
-    f.write(json_data)
-    f.close()
-
-    # await DataBannersState.actionUserWait.set()
+    return json_data

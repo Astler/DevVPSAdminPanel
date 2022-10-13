@@ -19,7 +19,12 @@ class BannerServerItem:
     date = ""
 
 
-@banners_api.route('/get_all_banners', methods=['GET'])
+@banners_api.route('/be_map_version', methods=['GET'])
+def get_map_version():
+    return str(get_last_update_time())
+
+
+@banners_api.route('/be_map', methods=['GET'])
 def get_banners():
     if time.time() >= get_last_update_time() + float(BE_MAP_UPDATE_HOURS) * 60 * 60:
         if os.path.exists(BE_BANNERS_MAP):
@@ -30,7 +35,7 @@ def get_banners():
         set_last_update_time()
         data = update_server_banners_map()
     else:
-        send_telegram_msg_to_me("Loading?!")
+        # send_telegram_msg_to_me("Loading?!")
         data = check_file_by_path(BE_BANNERS_MAP, "r").read()
 
     return data

@@ -44,14 +44,6 @@ def get_banners():
 def update_server_banners_map() -> str:
     file = check_file_by_path(BE_BANNERS_MAP, "w")
 
-    send_telegram_msg_to_me("Подключаюсь к Firebase...")
-
-    cred = credentials.Certificate(get_cer_data())
-
-    firebase_admin.initialize_app(cred, {
-        'projectId': PROJECT_ID,
-    })
-
     db = firestore.client()
 
     send_telegram_msg_to_me("Готово! Получаю баннеры...")

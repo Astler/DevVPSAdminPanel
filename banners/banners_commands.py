@@ -48,7 +48,7 @@ def be_add_admin():
 
 @banners_api_blueprint.route('/be_map', methods=['GET'])
 def get_banners():
-    if time.time() >= get_last_update_time() + float(BE_MAP_UPDATE_HOURS) * 60 * 60:
+    if time.time() >= float(get_last_update_time()) + float(BE_MAP_UPDATE_HOURS) * 60 * 60:
         if os.path.exists(BE_BANNERS_MAP):
             os.remove(BE_BANNERS_MAP)
 

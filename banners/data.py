@@ -14,7 +14,8 @@ import requests
 
 
 def get_formatted_be_saves_json() -> str:
-    return banners_editor_saves().to_json().replace("\'", "\"")
+    return str(banners_editor_saves().to_json()).replace("\'", "\"")
+
 
 def send_telegram_msg_to_me(text: str):
     token = BOT_TOKEN

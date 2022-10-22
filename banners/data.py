@@ -13,6 +13,9 @@ from loader import repository
 import requests
 
 
+def get_formatted_be_saves_json() -> str:
+    return banners_editor_saves().to_json().replace("\'", "\"")
+
 def send_telegram_msg_to_me(text: str):
     token = BOT_TOKEN
     chat_id = MY_PROFILE_ID

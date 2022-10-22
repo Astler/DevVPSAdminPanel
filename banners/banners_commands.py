@@ -10,7 +10,7 @@ from flask_login import login_required
 from werkzeug.exceptions import BadRequest
 
 from banners.data import get_cer_data, check_file_by_path, get_last_update_time, set_last_update_time, \
-    send_telegram_msg_to_me, banners_editor_saves, add_banners_editor_admin
+    send_telegram_msg_to_me, banners_editor_saves, add_banners_editor_admin, get_formatted_be_saves_json
 from banners.types.be_admin_data import BannersEditorAdminData
 from config import PROJECT_ID, BE_BANNERS_MAP, BE_MAP_UPDATE_HOURS
 
@@ -30,7 +30,7 @@ def get_map_version():
 
 @banners_api_blueprint.route('/be_settings', methods=['GET'])
 def get_be_saves():
-    return str(banners_editor_saves().to_json())
+    return get_formatted_be_saves_json()
 
 
 @banners_api_blueprint.route('/be_add_admin', methods=['GET', 'POST'])

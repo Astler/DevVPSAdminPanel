@@ -64,6 +64,7 @@ def firebase_connect():
 
 
 app = create_app()
+firebase_connect()
 
 with app.app_context():
     db.create_all()

@@ -71,14 +71,14 @@ def add_banners_editor_admin(admin_data: BannersEditorAdminData) -> str:
     return "Admin added!"
 
 
-def get_last_update_time() -> int:
+def get_last_update_time() -> str:
     saves = banners_editor_saves()
     return saves.map_update_time
 
 
 def set_last_update_time():
     saves = banners_editor_saves()
-    saves.map_update_time = time.time()
+    saves.map_update_time = str(time.time())
     update_banners_editor_saves(saves)
 
 

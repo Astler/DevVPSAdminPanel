@@ -1,5 +1,5 @@
 class BannersEditorSaves:
-    map_update_time = 0
+    map_update_time: str = ""
     admins = ["test"]
 
     def to_json(self):

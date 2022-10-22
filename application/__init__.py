@@ -11,7 +11,7 @@ send_telegram_msg_to_me("Запуск приложения!")
 
 db = SQLAlchemy()
 
-sign_up_enabled = False
+sign_up_enabled = True
 
 
 class User(UserMixin, db.Model):

@@ -3,14 +3,18 @@ import time
 import firebase_admin
 import simplejson as json
 from firebase_admin import credentials, firestore
-from flask import Blueprint
+from flask import Blueprint, request
 import os
 
+from flask_login import login_required
+from werkzeug.exceptions import BadRequest
+
 from banners.data import get_cer_data, check_file_by_path, get_last_update_time, set_last_update_time, \
-    send_telegram_msg_to_me
+    send_telegram_msg_to_me, banners_editor_saves, add_banners_editor_admin
+from banners.types.be_admin_data import BannersEditorAdminData
 from config import PROJECT_ID, BE_BANNERS_MAP, BE_MAP_UPDATE_HOURS
 
-banners_api = Blueprint('banners_api', __name__)
+banners_api_blueprint = Blueprint('banners_api', __name__)
 
 
 class BannerServerItem:
@@ -19,12 +23,30 @@ class BannerServerItem:
     date = ""
 
 
-@banners_api.route('/be_map_version', methods=['GET'])
+@banners_api_blueprint.route('/be_map_version', methods=['GET'])
 def get_map_version():
     return str(get_last_update_time())
 
 
-@banners_api.route('/be_map', methods=['GET'])
+@banners_api_blueprint.route('/be_settings', methods=['GET'])
+def get_be_saves():
+    return str(banners_editor_saves().to_json())
+
+
+@banners_api_blueprint.route('/be_add_admin', methods=['GET', 'POST'])
+@login_required
+def be_add_admin():
+    content = request.args.to_dict()
+
+    admin_data = BannersEditorAdminData.from_json(json.loads(str(content).replace("\'", "\"")))
+
+    if len(admin_data.id) == 0:
+        raise BadRequest()
+
+    return add_banners_editor_admin(admin_data)
+
+
+@banners_api_blueprint.route('/be_map', methods=['GET'])
 def get_banners():
     if time.time() >= get_last_update_time() + float(BE_MAP_UPDATE_HOURS) * 60 * 60:
         if os.path.exists(BE_BANNERS_MAP):

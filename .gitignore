@@ -5,3 +5,5 @@
 /.idea/.gitignore
 /.env
 /be_files/
+/instance/db.sqlite
+/.idea/dataSources.xml

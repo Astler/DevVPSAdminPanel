@@ -5,7 +5,8 @@ import time
 from github import GithubException
 
 import config
-from banners.be_saves import BannersEditorSaves
+from banners.types.be_admin_data import BannersEditorAdminData
+from banners.types.be_saves import BannersEditorSaves
 from config import CERT_PATH, A_PATH, BOT_TOKEN, MY_PROFILE_ID
 from loader import repository
 
@@ -51,14 +52,29 @@ def update_banners_editor_saves(saves: BannersEditorSaves):
     file.close()
 
 
+def add_banners_editor_admin(admin_data: BannersEditorAdminData) -> str:
+    saves = banners_editor_saves()
+
+    admins = saves.admins
+
+    if admins.__contains__(admin_data.id):
+        return "Already admin!"
+
+    admins.append(admin_data.id)
+
+    update_banners_editor_saves(saves)
+
+    return "Admin added!"
+
+
 def get_last_update_time() -> int:
     saves = banners_editor_saves()
-    return saves.last_banners_map_update_time
+    return saves.map_update_time
 
 
 def set_last_update_time():
     saves = banners_editor_saves()
-    saves.last_banners_map_update_time = time.time()
+    saves.map_update_time = time.time()
     update_banners_editor_saves(saves)
 
 

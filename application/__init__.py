@@ -22,6 +22,7 @@ class User(UserMixin, db.Model):
 
 
 def create_app() -> Flask:
+    global app
     app = Flask(__name__)
 
     app.config['SECRET_KEY'] = 'secret-key-goes-here'
@@ -50,7 +51,8 @@ def create_app() -> Flask:
         # since the user_id is just the primary key of our user table, use it in the query for the user
         return User.query.get(int(user_id))
 
-    return app
+    with app.app_context():
+        db.create_all()
 
 
 def firebase_connect():
@@ -63,8 +65,5 @@ def firebase_connect():
     })
 
 
-app = create_app()
+create_app()
 firebase_connect()
-
-with app.app_context():
-    db.create_all()

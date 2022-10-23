@@ -1,18 +1,17 @@
+import os
 import time
 
-import firebase_admin
 import simplejson as json
-from firebase_admin import credentials, firestore
-from flask import Blueprint, request
-import os
-
+from firebase_admin import firestore
+from flask import Blueprint, request, Response
 from flask_login import login_required
 from werkzeug.exceptions import BadRequest
 
-from banners.data import get_cer_data, check_file_by_path, get_last_update_time, set_last_update_time, \
+from application.base_response import BaseResponse
+from banners.data import check_file_by_path, get_last_update_time, set_last_update_time, \
     send_telegram_msg_to_me, banners_editor_saves, add_banners_editor_admin, get_formatted_be_saves_json
 from banners.types.be_admin_data import BannersEditorAdminData
-from config import PROJECT_ID, BE_BANNERS_MAP, BE_MAP_UPDATE_HOURS
+from config import BE_BANNERS_MAP, BE_MAP_UPDATE_HOURS
 
 banners_api_blueprint = Blueprint('banners_api', __name__)
 
@@ -23,9 +22,49 @@ class BannerServerItem:
     date = ""
 
 
+@banners_api_blueprint.route('/be_admin_delete_banner', methods=['GET', 'POST'])
+def delete_banner_by_admin() -> Response:
+    content = request.args.to_dict()
+
+    if not content.__contains__("admin"):
+        return BaseResponse(False, "You need to provide your admin id to perform this action",
+                            str(content)).to_response()
+
+    if not content.__contains__("id"):
+        return BaseResponse(False, "Do you forgot to add banner id?", str(content)).to_response()
+
+    admin_id = content["admin"]
+    banner_id = content["id"]
+
+    be_server_settings = banners_editor_saves()
+
+    if not be_server_settings.admins.__contains__(admin_id):
+        return BaseResponse(False, f"User {admin_id} is not admin!", str(content)).to_response()
+
+    banners_folder = u'shared_banners'
+
+    firestore_client = firestore.client()
+
+    banner_ref = firestore_client.collection(banners_folder).document(banner_id)
+
+    banner_data = banner_ref.get().to_dict()
+
+    if banner_data is None:
+        return BaseResponse(False, f"Banner with id {banner_id} not found!", str(content)).to_response()
+
+    send_telegram_msg_to_me(f"Admin with id {admin_id} requested deletion of this banner {banner_id}\n\n{banner_data}")
+
+    try:
+        firestore_client.collection(banners_folder).document(banner_id).delete()
+    except Exception as error:
+        return BaseResponse(False, str(error), str(content)).to_response()
+
+    return BaseResponse(True).to_response()
+
+
 @banners_api_blueprint.route('/be_map_version', methods=['GET'])
 def get_map_version():
-    return str(get_last_update_time())
+    return get_last_update_time()
 
 
 @banners_api_blueprint.route('/be_settings', methods=['GET'])

@@ -6,12 +6,15 @@ from application import app
 class BaseResponse:
     success = False
     reason = ""
-    request_data = ""
 
-    def __init__(self, success: bool, reason: str = "", request_data: str = ""):
+    def __init__(self, success: bool, reason: str = "", request_data: dict = []):
         self.success = success
         self.reason = reason
-        self.request = request_data
+        self.init_request_fields(request_data)
+
+    def init_request_fields(self, request_data: dict):
+        for field in request_data:
+            self.__dict__[field] = request_data[field]
 
     def to_response(self) -> Response:
         if self.success:

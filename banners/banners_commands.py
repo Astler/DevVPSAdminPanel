@@ -1,5 +1,6 @@
 import os
 import time
+from datetime import datetime
 
 import simplejson as json
 from firebase_admin import firestore
@@ -13,9 +14,10 @@ from banners.data import check_file_by_path, get_last_update_time, set_last_upda
     send_telegram_msg_to_me, banners_editor_saves, add_banners_editor_admin, get_formatted_be_saves_json
 from banners.types.be_admin_data import BannersEditorAdminData
 from config import BE_BANNERS_MAP, BE_MAP_UPDATE_HOURS
-from datetime import datetime
 
 banners_api_blueprint = Blueprint('banners_api', __name__)
+
+banners_folder = u'shared_banners'
 
 
 class DailyBannerItem(db.Model):
@@ -30,42 +32,49 @@ class BannerServerItem:
     date = ""
 
 
+def check_admins_banner_request(request_parameters: dict) -> BaseResponse:
+    if not request_parameters.__contains__("admin"):
+        return BaseResponse(False, "You need to provide your admin id to perform this action",
+                            request_parameters)
+
+    if not request_parameters.__contains__("id"):
+        return BaseResponse(False, "Do you forgot to add banner id?", request_parameters)
+
+    admin_id = request_parameters["admin"]
+    be_server_settings = banners_editor_saves()
+
+    if not be_server_settings.admins.__contains__(admin_id):
+        return BaseResponse(False, f"User {admin_id} is not admin!", request_parameters)
+
+    return BaseResponse(True, request_data=request_parameters)
+
+
 @banners_api_blueprint.route('/be_admin_delete_banner', methods=['GET', 'POST'])
 def delete_banner_by_admin() -> Response:
     content = request.args.to_dict()
 
-    if not content.__contains__("admin"):
-        return BaseResponse(False, "You need to provide your admin id to perform this action",
-                            str(content)).to_response()
+    check_result = check_admins_banner_request(content)
 
-    if not content.__contains__("id"):
-        return BaseResponse(False, "Do you forgot to add banner id?", str(content)).to_response()
+    if not check_result.success:
+        return check_result.to_response()
 
     admin_id = content["admin"]
     banner_id = content["id"]
 
-    be_server_settings = banners_editor_saves()
-
-    if not be_server_settings.admins.__contains__(admin_id):
-        return BaseResponse(False, f"User {admin_id} is not admin!", str(content)).to_response()
-
-    banners_folder = u'shared_banners'
-
     firestore_client = firestore.client()
 
     banner_ref = firestore_client.collection(banners_folder).document(banner_id)
-
     banner_data = banner_ref.get().to_dict()
 
     if banner_data is None:
-        return BaseResponse(False, f"Banner with id {banner_id} not found!", str(content)).to_response()
+        return BaseResponse(False, f"Banner with id {banner_id} not found!", content).to_response()
 
     send_telegram_msg_to_me(f"Admin with id {admin_id} requested deletion of this banner {banner_id}\n\n{banner_data}")
 
     try:
         firestore_client.collection(banners_folder).document(banner_id).delete()
     except Exception as error:
-        return BaseResponse(False, str(error), str(content)).to_response()
+        return BaseResponse(False, str(error), content).to_response()
 
     return BaseResponse(True).to_response()
 
@@ -74,25 +83,24 @@ def delete_banner_by_admin() -> Response:
 def add_to_daily_queue() -> Response:
     content = request.args.to_dict()
 
-    if not content.__contains__("admin"):
-        return BaseResponse(False, "You need to provide your admin id to perform this action",
-                            str(content)).to_response()
+    check_result = check_admins_banner_request(content)
 
-    if not content.__contains__("id"):
-        return BaseResponse(False, "Do you forgot to add banner id?", str(content)).to_response()
+    if not check_result.success:
+        return check_result.to_response()
 
     admin_id = content["admin"]
     banner_id = content["id"]
 
-    be_server_settings = banners_editor_saves()
+    banner_with_id = db.session.query(DailyBannerItem).filter(DailyBannerItem.banner_id == banner_id).first()
 
-    if not be_server_settings.admins.__contains__(admin_id):
-        return BaseResponse(False, f"User {admin_id} is not admin!", str(content)).to_response()
+    if banner_with_id is not None:
+        return BaseResponse(False, f"Banner with this ID {banner_id} already is queue!", content).to_response()
 
     last_banner = db.session.query(DailyBannerItem).order_by(DailyBannerItem.record_id.desc()).first()
+    print(last_banner)
 
-    today = datetime.today().strftime('%Y-%m-%d')
-    dt_obj = datetime.strptime(today, '%Y-%m-%d')
+    today = datetime.today().strftime('%Y-%m-%d') + " 00:00:00"
+    dt_obj = datetime.strptime(today, '%Y-%m-%d %H:%M:%S')
     milli_seconds = dt_obj.timestamp() * 1000
 
     if last_banner is None:
@@ -100,12 +108,16 @@ def add_to_daily_queue() -> Response:
     else:
         date = last_banner.date + 86400000
 
-    print(last_banner)
+    date_for_banner = time.strftime('%Y-%m-%d %H:%M:%S:{}'.format(date % 1000), time.gmtime(date / 1000.0))
+    print(date_for_banner)
 
     new_banner = DailyBannerItem(banner_id=banner_id, date=date)
 
     db.session.add(new_banner)
     db.session.commit()
+
+    send_telegram_msg_to_me(
+        f"Admin with id {admin_id} added {banner_id} to daily queue. This banner date is {date_for_banner}")
 
     return BaseResponse(True).to_response()
 

@@ -7,14 +7,12 @@ from github import GithubException
 
 import config
 from application import db
-from banners.banners_commands import DailyBannerItem
+from banners.db.daily_banner_item import DailyBannerItem
 from banners.types.be_admin_data import BannersEditorAdminData
 from banners.types.be_saves import BannersEditorSaves
 from banners.types.be_settings import BannersEditorSettings
-from config import CERT_PATH, A_PATH, BOT_TOKEN, MY_PROFILE_ID
+from config import A_PATH
 from loader import repository
-
-import requests
 
 
 def get_banners_settings() -> str:
@@ -43,12 +41,7 @@ def get_banners_settings() -> str:
     return str(settings.to_json()).replace("\'", "\"")
 
 
-def send_telegram_msg_to_me(text: str):
-    token = BOT_TOKEN
-    chat_id = MY_PROFILE_ID
-    url_req = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text={text}"
-    results = requests.get(url_req)
-    print(results.json())
+
 
 
 def check_file_by_path(path_to_file: str, open_mode: str = "a+"):
@@ -108,15 +101,7 @@ def set_last_update_time():
     update_banners_editor_saves(saves)
 
 
-def get_cer_data():
-    try:
-        file = repository.get_contents(CERT_PATH)
-        contents = file.decoded_content.decode()
-        cer = json.loads(contents)
-    except GithubException:
-        cer = {}
 
-    return cer
 
 
 def get_a_list():

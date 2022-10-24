@@ -4,7 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from firebase_admin import credentials
 from flask_login import LoginManager, UserMixin
 
-from banners.data import send_telegram_msg_to_me, get_cer_data
+from application.github_utils import get_cer_data
+from application.telegram_utils import send_telegram_msg_to_me
 from config import PROJECT_ID
 
 send_telegram_msg_to_me("Запуск приложения!")
@@ -21,7 +22,7 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(1000))
 
 
-def create_app() -> Flask:
+def create_app():
     global app
     app = Flask(__name__)
 

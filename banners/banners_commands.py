@@ -8,22 +8,17 @@ from flask import Blueprint, request, Response
 from flask_login import login_required
 from werkzeug.exceptions import BadRequest
 
-from application import db
+from application import db, send_telegram_msg_to_me
 from application.base_response import BaseResponse
 from banners.data import check_file_by_path, get_last_update_time, set_last_update_time, \
-    send_telegram_msg_to_me, banners_editor_saves, add_banners_editor_admin, get_banners_settings
+    banners_editor_saves, add_banners_editor_admin, get_banners_settings
+from banners.db.daily_banner_item import DailyBannerItem
 from banners.types.be_admin_data import BannersEditorAdminData
 from config import BE_BANNERS_MAP, BE_MAP_UPDATE_HOURS
 
 banners_api_blueprint = Blueprint('banners_api', __name__)
 
 banners_folder = u'shared_banners'
-
-
-class DailyBannerItem(db.Model):
-    record_id = db.Column(db.Integer, primary_key=True)
-    banner_id = db.Column(db.String(100), unique=True)
-    date = db.Column(db.BigInteger)
 
 
 class BannerServerItem:

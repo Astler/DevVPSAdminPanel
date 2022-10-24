@@ -11,8 +11,7 @@ from werkzeug.exceptions import BadRequest
 from application import db
 from application.base_response import BaseResponse
 from banners.data import check_file_by_path, get_last_update_time, set_last_update_time, \
-    send_telegram_msg_to_me, banners_editor_saves, add_banners_editor_admin, get_formatted_be_saves_json
-from banners.responses.daily_response import DailyResponse
+    send_telegram_msg_to_me, banners_editor_saves, add_banners_editor_admin, get_banners_settings
 from banners.types.be_admin_data import BannersEditorAdminData
 from config import BE_BANNERS_MAP, BE_MAP_UPDATE_HOURS
 
@@ -123,36 +122,14 @@ def add_to_daily_queue() -> Response:
     return BaseResponse(True).to_response()
 
 
-@banners_api_blueprint.route('/be_get_daily_info', methods=['GET', 'POST'])
-def get_daily_banners_info() -> Response:
-    args = request.args.to_dict()
-
-    if not args.__contains__("date"):
-        return BaseResponse(False, "I need a date to find banner!", args).to_response()
-
-    date = float(args["date"])
-
-    requested_date = time.strftime('%Y-%m-%d %H:%M:%S:{}'.format(date % 1000), time.gmtime(date / 1000.0))
-    print(requested_date)
-
-    banner_for_date = db.session.query(DailyBannerItem).filter(DailyBannerItem.date == date).first()
-
-    if banner_for_date is None:
-        return BaseResponse(False, f"there is no banner for {requested_date}", args).to_response()
-
-    success_response = DailyResponse(daily_banner_id=banner_for_date.banner_id, success=True)
-
-    return success_response.to_response()
-
-
 @banners_api_blueprint.route('/be_map_version', methods=['GET'])
 def get_map_version():
     return get_last_update_time()
 
 
 @banners_api_blueprint.route('/be_settings', methods=['GET'])
-def get_be_saves():
-    return get_formatted_be_saves_json()
+def get_settings():
+    return get_banners_settings()
 
 
 @banners_api_blueprint.route('/be_add_admin', methods=['GET', 'POST'])

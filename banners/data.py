@@ -1,20 +1,46 @@
 import json
 import os
 import time
+from datetime import datetime
 
 from github import GithubException
 
 import config
+from application import db
+from banners.banners_commands import DailyBannerItem
 from banners.types.be_admin_data import BannersEditorAdminData
 from banners.types.be_saves import BannersEditorSaves
+from banners.types.be_settings import BannersEditorSettings
 from config import CERT_PATH, A_PATH, BOT_TOKEN, MY_PROFILE_ID
 from loader import repository
 
 import requests
 
 
-def get_formatted_be_saves_json() -> str:
-    return str(banners_editor_saves().to_json()).replace("\'", "\"")
+def get_banners_settings() -> str:
+    today = datetime.today().strftime('%Y-%m-%d') + " 00:00:00"
+    dt_obj = datetime.strptime(today, '%Y-%m-%d %H:%M:%S')
+    today_in_millis = dt_obj.timestamp() * 1000
+
+    requested_date = time.strftime('%Y-%m-%d %H:%M:%S:{}'.format(today_in_millis % 1000),
+                                   time.gmtime(today_in_millis / 1000.0))
+    print(requested_date)
+
+    banner_for_date = db.session.query(DailyBannerItem).filter(DailyBannerItem.date == today_in_millis).first()
+
+    if banner_for_date is None:
+        banner_for_date = DailyBannerItem()
+        print(f"there is no banner for {requested_date}")
+
+    settings = BannersEditorSettings()
+
+    saves = banners_editor_saves()
+
+    settings.admins = saves.admins
+    settings.map_update_time = saves.map_update_time
+    settings.daily_banner_id = banner_for_date.banner_id
+
+    return str(settings.to_json()).replace("\'", "\"")
 
 
 def send_telegram_msg_to_me(text: str):

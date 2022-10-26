@@ -1,8 +1,8 @@
+import json
 import os
 import time
 from datetime import datetime
 
-import simplejson as json
 from firebase_admin import firestore
 from flask import Blueprint, request, Response
 from flask_login import login_required
@@ -12,7 +12,7 @@ from application import db, send_telegram_msg_to_me
 from application.base_response import BaseResponse
 from banners.data import check_file_by_path, get_last_update_time, set_last_update_time, \
     banners_editor_saves, add_banners_editor_admin, get_banners_settings
-from banners.db.daily_banner_item import DailyBannerItem
+from banners.db.daily_banner_item import DailyBannerItem, DailyBannerItemEncoder
 from banners.types.be_admin_data import BannersEditorAdminData
 from config import BE_BANNERS_MAP, BE_MAP_UPDATE_HOURS, BE_PAGE_SIZE
 
@@ -147,7 +147,7 @@ def get_paged_previous_banners():
         for banner in banners[first_item_index:last_item_index]:
             selection.append(banner)
 
-    return str(json.dumps(selection)).replace("\'", "\"")
+    return str(json.dumps(selection, ensure_ascii=False, cls=DailyBannerItemEncoder)).replace("\'", "\"")
 
 
 @banners_api_blueprint.route('/be_map_version', methods=['GET'])

@@ -1,4 +1,11 @@
+from json import JSONEncoder
+
 from application import db
+
+
+class DailyBannerItemEncoder(JSONEncoder):
+    def default(self, obj):
+        return {"banner_id": obj.banner_id, "date": obj.date}
 
 
 class DailyBannerItem(db.Model):

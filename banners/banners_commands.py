@@ -14,7 +14,7 @@ from banners.data import check_file_by_path, get_last_update_time, set_last_upda
     banners_editor_saves, add_banners_editor_admin, get_banners_settings
 from banners.db.daily_banner_item import DailyBannerItem
 from banners.types.be_admin_data import BannersEditorAdminData
-from config import BE_BANNERS_MAP, BE_MAP_UPDATE_HOURS
+from config import BE_BANNERS_MAP, BE_MAP_UPDATE_HOURS, BE_PAGE_SIZE
 
 banners_api_blueprint = Blueprint('banners_api', __name__)
 
@@ -115,6 +115,39 @@ def add_to_daily_queue() -> Response:
         f"Admin with id {admin_id} added {banner_id} to daily queue. This banner date is {date_for_banner}")
 
     return BaseResponse(True).to_response()
+
+
+@banners_api_blueprint.route('/be_daily_banners_list', methods=['GET', 'POST'])
+def get_paged_previous_banners():
+    request_parameters = request.args.to_dict()
+
+    if not request_parameters.__contains__("page"):
+        page = 0
+    else:
+        page = int(request_parameters["page"])
+
+    today = datetime.today().strftime('%Y-%m-%d') + " 00:00:00"
+    dt_obj = datetime.strptime(today, '%Y-%m-%d %H:%M:%S')
+    today_milli_seconds = dt_obj.timestamp() * 1000
+
+    banners = db.session.query(DailyBannerItem).filter(DailyBannerItem.date >= today_milli_seconds)
+
+    selection = []
+
+    if banners.count() <= BE_PAGE_SIZE:
+        for banner in banners:
+            selection.append(banner)
+    else:
+        last_item_index = (page + 1) * BE_PAGE_SIZE
+        first_item_index = page * BE_PAGE_SIZE
+
+        if banners.count() < last_item_index:
+            last_item_index = banners.count()
+
+        for banner in banners[first_item_index:last_item_index]:
+            selection.append(banner)
+
+    return str(json.dumps(selection)).replace("\'", "\"")
 
 
 @banners_api_blueprint.route('/be_map_version', methods=['GET'])

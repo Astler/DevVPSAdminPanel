@@ -134,18 +134,14 @@ def get_paged_previous_banners():
 
     selection = []
 
-    if banners.count() <= BE_PAGE_SIZE:
-        for banner in banners:
-            selection.append(banner)
-    else:
-        last_item_index = (page + 1) * BE_PAGE_SIZE
-        first_item_index = page * BE_PAGE_SIZE
+    last_item_index = (page + 1) * BE_PAGE_SIZE
+    first_item_index = page * BE_PAGE_SIZE
 
-        if banners.count() < last_item_index:
-            last_item_index = banners.count()
+    if banners.count() < last_item_index:
+        last_item_index = banners.count()
 
-        for banner in banners[first_item_index:last_item_index]:
-            selection.append(banner)
+    for banner in banners[first_item_index:last_item_index]:
+        selection.append(banner)
 
     return str(json.dumps(selection, ensure_ascii=False, cls=DailyBannerItemEncoder)).replace("\'", "\"")
 

@@ -130,7 +130,8 @@ def get_paged_previous_banners():
     dt_obj = datetime.strptime(today, '%Y-%m-%d %H:%M:%S')
     today_milli_seconds = dt_obj.timestamp() * 1000
 
-    banners = db.session.query(DailyBannerItem).filter(DailyBannerItem.date < today_milli_seconds)
+    banners = db.session.query(DailyBannerItem).filter(DailyBannerItem.date < today_milli_seconds).order_by(
+        DailyBannerItem.date.desc())
 
     selection = []
 

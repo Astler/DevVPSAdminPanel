@@ -190,7 +190,7 @@ def get_banners():
         # send_telegram_msg_to_me("Loading?!")
         data = check_file_by_path(BE_BANNERS_MAP, "r").read()
 
-    return data
+    return data.replace("\'", "_")
 
 
 @banners_api_blueprint.route('/be_check_empty_patterns', methods=['GET'])

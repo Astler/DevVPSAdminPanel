@@ -5,7 +5,7 @@ from firebase_admin import credentials
 from flask_login import LoginManager, UserMixin
 
 from application.github_utils import get_cer_data
-from application.telegram_utils import send_telegram_msg_to_me
+from cat.utils.telegram_utils import send_telegram_msg_to_me
 from config import PROJECT_ID
 
 send_telegram_msg_to_me("Запуск приложения!")

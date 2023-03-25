@@ -14,6 +14,7 @@ from banners.data import check_file_by_path, get_last_update_time, set_last_upda
     banners_editor_saves, add_banners_editor_admin, get_banners_settings
 from banners.db.daily_banner_item import DailyBannerItem, DailyBannerItemEncoder
 from banners.types.be_admin_data import BannersEditorAdminData
+from cat.utils.ftp_utils import upload_file_to_folder
 from config import BE_BANNERS_MAP, BE_MAP_UPDATE_HOURS, BE_PAGE_SIZE
 
 banners_api_blueprint = Blueprint('banners_api', __name__)
@@ -232,6 +233,11 @@ def update_server_banners_map() -> str:
     file.close()
 
     send_telegram_msg_to_me(f"Найдено {len(items)} баннеров!")
+
+    try:
+        upload_file_to_folder(BE_BANNERS_MAP)
+    except Exception as e:
+        print(e)
 
     return json_data
 

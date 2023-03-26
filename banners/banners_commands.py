@@ -87,6 +87,9 @@ def add_to_daily_queue() -> Response:
     admin_id = content["admin"]
     banner_id = content["id"]
 
+    db.session.query(DailyBannerItem).delete()
+    db.session.commit()
+
     banner_with_id = db.session.query(DailyBannerItem).filter(DailyBannerItem.banner_id == banner_id).first()
 
     if banner_with_id is not None:

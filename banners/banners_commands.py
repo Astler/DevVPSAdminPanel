@@ -14,6 +14,7 @@ from banners.data import check_file_by_path, get_last_update_time, set_last_upda
     banners_editor_saves, add_banners_editor_admin, get_banners_settings
 from banners.db.daily_banner_item import DailyBannerItem, DailyBannerItemEncoder
 from banners.types.be_admin_data import BannersEditorAdminData
+from banners.types.dialy_banner import DailyBanner
 from cat.utils.ftp_utils import upload_file_to_folder
 from config import BE_BANNERS_MAP, BE_MAP_UPDATE_HOURS, BE_PAGE_SIZE
 
@@ -146,6 +147,28 @@ def get_paged_previous_banners():
         selection.append(banner)
 
     return str(json.dumps(selection, ensure_ascii=False, cls=DailyBannerItemEncoder)).replace("\'", "\"")
+
+
+@banners_api_blueprint.route('/be/daily_banners_by_date', methods=['GET', 'POST'])
+def get_daily_banner():
+    request_parameters = request.args.to_dict()
+
+    if not request_parameters.__contains__("date"):
+        today = datetime.today().strftime('%Y-%m-%d') + " 00:00:00"
+    else:
+        today = request_parameters["date"] + " 00:00:00"
+
+    dt_obj = datetime.strptime(today, '%Y-%m-%d %H:%M:%S')
+    today_milli_seconds = dt_obj.timestamp() * 1000
+
+    banner = db.session.query(DailyBannerItem).filter(DailyBannerItem.date == today_milli_seconds).first()
+
+    if banner is None:
+        return BaseResponse(False, f"Banner for date {today} not found!", request_parameters).to_response()
+
+    response = DailyBanner()
+    response.daily_banner_id = banner.banner_id
+    return str(response.to_json()).replace("\'", "\"")
 
 
 @banners_api_blueprint.route('/be_map_version', methods=['GET'])

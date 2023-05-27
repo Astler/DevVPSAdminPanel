@@ -149,7 +149,7 @@ def get_paged_previous_banners():
     return str(json.dumps(selection, ensure_ascii=False, cls=DailyBannerItemEncoder)).replace("\'", "\"")
 
 
-@banners_api_blueprint.route('/be/daily_banners_by_date', methods=['GET', 'POST'])
+@banners_api_blueprint.route('/be/daily_banner', methods=['GET', 'POST'])
 def get_daily_banner():
     request_parameters = request.args.to_dict()
 

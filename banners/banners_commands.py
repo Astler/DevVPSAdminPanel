@@ -1,11 +1,12 @@
 import json
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from firebase_admin import firestore
 from flask import Blueprint, request, Response
 from flask_login import login_required
+from sqlalchemy import asc, func
 from werkzeug.exceptions import BadRequest
 
 from application import db, send_telegram_msg_to_me
@@ -153,18 +154,33 @@ def get_paged_previous_banners():
 def get_daily_banner():
     request_parameters = request.args.to_dict()
 
+    # Calculate today's date and milliseconds for comparison
     if not request_parameters.__contains__("date"):
-        today = datetime.today().strftime('%Y-%m-%d') + " 00:00:00"
+        today = datetime.today()
     else:
-        today = request_parameters["date"] + " 00:00:00"
+        today = datetime.strptime(request_parameters["date"], '%Y-%m-%d')
 
-    dt_obj = datetime.strptime(today, '%Y-%m-%d %H:%M:%S')
-    today_milli_seconds = dt_obj.timestamp() * 1000
+    today_start = today.replace(hour=0, minute=0, second=0, microsecond=0)
+    today_milli_seconds = int(today_start.timestamp() * 1000)
 
     banner = db.session.query(DailyBannerItem).filter(DailyBannerItem.date == today_milli_seconds).first()
 
     if banner is None:
-        return BaseResponse(False, f"Banner for date {today} not found!", request_parameters).to_response()
+        seven_days_ago = today - timedelta(days=7)
+        seven_days_ago_milli_seconds = int(seven_days_ago.timestamp() * 1000)
+
+        banner = db.session.query(DailyBannerItem) \
+            .filter(DailyBannerItem.date < today_milli_seconds) \
+            .filter(DailyBannerItem.date < seven_days_ago_milli_seconds) \
+            .order_by(func.random()) \
+            .first()
+
+        if banner is None:
+            return BaseResponse(False, "No banner available for the specified date range!",
+                                request_parameters).to_response()
+        else:
+            banner.last_shown_date = today_milli_seconds
+            db.session.commit()
 
     response = DailyBanner()
     response.daily_banner_id = banner.banner_id

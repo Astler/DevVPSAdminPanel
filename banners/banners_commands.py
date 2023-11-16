@@ -180,6 +180,10 @@ def get_daily_banner():
                                 request_parameters).to_response()
         else:
             banner.last_shown_date = today_milli_seconds
+            db.session.delete(banner)
+            db.session.commit()
+            new_banner = DailyBannerItem(banner_id=banner.banner_id, date=today_milli_seconds)
+            db.session.add(new_banner)
             db.session.commit()
 
     response = DailyBanner()

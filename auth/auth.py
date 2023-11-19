@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, logout_user
-from application import db, User, sign_up_enabled
+from application import app_sqlite_db, User, sign_up_enabled
 
 auth_blueprint = Blueprint('auth', __name__)
 
@@ -56,8 +56,8 @@ def signup_post():
     new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'))
 
     # add the new user to the database
-    db.session.add(new_user)
-    db.session.commit()
+    app_sqlite_db.session.add(new_user)
+    app_sqlite_db.session.commit()
 
     return redirect(url_for('auth.login'))
 

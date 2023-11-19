@@ -6,8 +6,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flask Dashboard</title>
-    <!-- Material Components for Web -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/material-components-web@latest/dist/material-components-web.min.css">
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/material-components-web@latest/dist/material-components-web.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/material-components-web@latest/dist/material-components-web.min.js"></script>
+
     <style>
         :root {
             --mdc-theme-primary: #bb86fc;
@@ -19,11 +23,30 @@
             --mdc-theme-on-secondary: #000000;
             --mdc-theme-on-error: #000000;
             --mdc-theme-on-surface: #ffffff;
+            --mdc-theme-on-background: #ffffff;
             --mdc-theme-text-primary-on-background: #ffffff;
             --mdc-theme-text-secondary-on-background: rgba(255, 255, 255, 0.7);
             --mdc-theme-text-hint-on-background: rgba(255, 255, 255, 0.5);
             --mdc-theme-text-disabled-on-background: rgba(255, 255, 255, 0.5);
             --mdc-theme-text-icon-on-background: rgba(255, 255, 255, 0.5);
+        }
+
+        .mdc-data-table {
+            --mdc-data-table-background-color: var(--mdc-theme-surface);
+            --mdc-data-table-header-row-background-color: var(--mdc-theme-on-background);
+            --mdc-data-table-header-row-text-color: var(--mdc-theme-on-background);
+            --mdc-data-table-content-background-color: var(--mdc-theme-surface);
+            --mdc-data-table-content-text-color: var(--mdc-theme-text-primary-on-background);
+            --mdc-data-table-row-hover-background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .mdc-data-table__header-cell {
+            border-bottom-color: var(--mdc-theme-on-background);
+            color: var(--mdc-theme-text-primary-on-background);
+        }
+
+        .mdc-data-table__cell {
+            color: var(--mdc-theme-text-primary-on-background);
         }
 
         body {
@@ -49,39 +72,36 @@
         .container {
             padding: 1rem;
         }
-
-        /* Additional global styles and overrides for Material components... */
     </style>
 </head>
 
 <body class="mdc-typography">
-    <header class="mdc-top-app-bar">
-        <div class="mdc-top-app-bar__row">
-            <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
-                <a href="{{ url_for('main.index') }}" class="mdc-top-app-bar__title">Home</a>
-                {% if current_user.is_authenticated %}
+<header class="mdc-top-app-bar">
+    <div class="mdc-top-app-bar__row">
+        <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+            <a href="{{ url_for('main.index') }}" class="mdc-top-app-bar__title">Home</a>
+            {% if current_user.is_authenticated %}
                 <a href="{{ url_for('main.profile') }}" class="mdc-top-app-bar__title">Profile</a>
                 <a href="{{ url_for('auth.logout') }}" class="mdc-top-app-bar__title">Logout</a>
-                {% else %}
+            {% else %}
                 <a href="{{ url_for('auth.login') }}" class="mdc-top-app-bar__title">Login</a>
                 {% if sign_up_enabled %}
-                <a href="{{ url_for('auth.signup') }}" class="mdc-top-app-bar__title">Sign Up</a>
+                    <a href="{{ url_for('auth.signup') }}" class="mdc-top-app-bar__title">Sign Up</a>
                 {% endif %}
-                {% endif %}
-            </section>
-        </div>
-    </header>
+            {% endif %}
+        </section>
+    </div>
+</header>
 
-    <main class="mdc-top-app-bar--fixed-adjust">
-        <div class="container">
-            {% block content %}
-            <!-- Content will be injected here from child templates -->
-            {% endblock %}
-        </div>
-    </main>
+<main class="mdc-top-app-bar--fixed-adjust">
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+</main>
 
-    <script src="https://cdn.jsdelivr.net/npm/material-components-web@latest/dist/material-components-web.min.js"></script>
-    <script>mdc.autoInit()</script>
+<script src="https://cdn.jsdelivr.net/npm/material-components-web@latest/dist/material-components-web.min.js"></script>
+<script>mdc.autoInit()</script>
 </body>
 
 </html>

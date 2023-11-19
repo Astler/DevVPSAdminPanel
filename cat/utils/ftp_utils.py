@@ -8,3 +8,4 @@ def upload_file_to_folder(path_to_file: str, folder: str = "apps_data"):
 
     with ftplib.FTP(FTP_URL, FTP_USER, FTP_PASS) as ftp, file:
         ftp.storbinary(f'STOR /astler.net/{folder}/{file.name}', file)
+        print(f"Uploaded {file.name} to {folder}. Check it: /astler.net/{folder}/{file.name}")

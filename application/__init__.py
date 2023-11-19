@@ -1,25 +1,26 @@
 import firebase_admin
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials
 from flask_login import LoginManager, UserMixin
 
-from application.github_utils import load_firebase_certificate
+from cat.utils.github_utils import load_firebase_certificate
 from cat.utils.telegram_utils import send_telegram_msg_to_me
 from config import PROJECT_ID
 
 send_telegram_msg_to_me("Запуск приложения!")
 
-db = SQLAlchemy()
+app_sqlite_db = SQLAlchemy()
 app = None
 
 sign_up_enabled = True
 
-class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(100))
-    name = db.Column(db.String(1000))
+
+class User(UserMixin, app_sqlite_db.Model):
+    id = app_sqlite_db.Column(app_sqlite_db.Integer, primary_key=True)
+    email = app_sqlite_db.Column(app_sqlite_db.String(100), unique=True)
+    password = app_sqlite_db.Column(app_sqlite_db.String(100))
+    name = app_sqlite_db.Column(app_sqlite_db.String(1000))
 
 
 def create_app():
@@ -29,13 +30,13 @@ def create_app():
     app.config['SECRET_KEY'] = 'secret-key-goes-here'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 
-    db.init_app(app)
+    app_sqlite_db.init_app(app)
 
     from banners.banners_commands import banners_api_blueprint
     app.register_blueprint(banners_api_blueprint)
 
-    from banners.banners_admin_ui import banners_ui_blueprint
-    app.register_blueprint(banners_ui_blueprint)
+    from banners.admin_commands import banners_admin
+    app.register_blueprint(banners_admin)
 
     from auth.auth import auth_blueprint
     app.register_blueprint(auth_blueprint)
@@ -56,7 +57,7 @@ def create_app():
         return User.query.get(int(user_id))
 
     with app.app_context():
-        db.create_all()
+        app_sqlite_db.create_all()
 
 
 def firebase_connect():

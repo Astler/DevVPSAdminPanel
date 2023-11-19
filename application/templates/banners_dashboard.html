@@ -1,139 +1,189 @@
 {% extends "base.html" %}
 
 {% block content %}
-<style>
-    .dashboard-container {
-        display: flex;
-        height: 100vh;
-        color: var(--mdc-theme-on-surface);
-    }
+    <style>
+        .dashboard-container {
+            display: flex;
+            height: 100vh;
+            color: var(--mdc-theme-on-surface);
+        }
 
-    .left-side, .right-side {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        padding: 1rem;
-        gap: 1rem;
-    }
+        @media (max-width: 900px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+        }
 
-    .data-section, .actions-section, .logs {
-        background-color: var(--mdc-theme-surface);
-        border-radius: 8px;
-        margin-bottom: 1rem;
-        padding: 1rem;
-    }
+        .left-side, .right-side {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            gap: 1rem;
+        }
 
-    .daily-banner img {
-        max-width: 100%;
-        height: auto;
-        border-radius: 4px;
-    }
+        .data-section, .actions-section, .logs {
+            background-color: var(--mdc-theme-surface);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            padding: 1rem;
+        }
 
-    .stats {
-        text-align: center;
-        padding: 1rem 0;
-    }
+        .data-section {
+            display: flex;
+        }
 
-    .actions-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-    }
+        .daily-banner img {
+            flex: 1;
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
 
-    .actions-grid button {
-        padding: 1rem;
-        cursor: pointer;
-        border: none;
-        background-color: var(--mdc-theme-primary);
-        color: var(--mdc-theme-on-primary);
-        border-radius: 4px;
-        font-size: 1rem;
-    }
+        .stats {
+            flex: 1;
+            text-align: center;
+        }
 
-    .logs {
-        overflow-y: auto;
-    }
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
+        .actions-grid button {
+            padding: 1rem;
+            cursor: pointer;
+            border: none;
+            background-color: var(--mdc-theme-primary);
+            color: var(--mdc-theme-on-primary);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
 
-    table th, table td {
-        padding: 0.5rem;
-        border-bottom: 1px solid var(--mdc-theme-background);
-    }
+        .logs {
+            overflow-y: auto;
+        }
 
-    table thead th {
-        position: sticky;
-        top: 0;
-        background-color: var(--mdc-theme-surface);
-        color: var(--mdc-theme-text-primary-on-background);
-    }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-    /* Padding below the app bar */
-    .mdc-top-app-bar--fixed-adjust {
-        padding-top: 64px; /* Adjust this value based on your app bar's height */
-    }
+        table th, table td {
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--mdc-theme-background);
+        }
 
-    /* Ensure buttons have the ripple effect */
-    .mdc-button {
-        /* other styles */
-    }
+        table thead th {
+            position: sticky;
+            top: 0;
+            background-color: var(--mdc-theme-surface);
+            color: var(--mdc-theme-text-primary-on-background);
+        }
 
-    .mdc-button:not(:disabled) {
-        /* other styles */
-    }
-</style>
+        /* Padding below the app bar */
+        .mdc-top-app-bar--fixed-adjust {
+            padding-top: 64px; /* Adjust this value based on your app bar's height */
+        }
 
-<div class="dashboard-container">
-    <div class="left-side">
-        <div class="data-section">
-            <div class="daily-banner">
-                <img src="{{ daily_banner_url }}" alt="Daily Banner" />
+        /* Ensure buttons have the ripple effect */
+        .mdc-button {
+            /* other styles */
+        }
+
+        .mdc-button:not(:disabled) {
+            /* other styles */
+        }
+    </style>
+
+    <div class="dashboard-container">
+        <div class="left-side">
+            <div class="data-section">
+                <div class="daily-banner">
+                    <img src="{{ daily_banner_url }}" alt="Daily Banner"/>
+                    <p style="font-size: 10px; color: rgb(128,128,128); text-align: center;">{{ daily_banner_id }}</p>
+                </div>
+                <div class="stats">
+                    <h2>Statistics</h2>
+                    <p>Admins Count: {{ admins_count }}</p>
+                    <div style="height: 30px;"></div>
+                    <p>Total banners: {{ total_banners }}</p>
+                    <p>{{ last_mapping_time }}</p>
+                    <div style="height: 30px;"></div>
+                    <p>Messed Banners Count: {{ messed_banners }}</p>
+                    <p>{{ messed_banners_update_time }}</p>
+                    <p id="messedLoading">Loading..</p>
+                    <button class="refresh-button mdc-button" id="refreshBtn" data-mdc-auto-init="MDCRipple">
+                        <span class="material-symbols-outlined">refresh</span> Refresh
+                    </button>
+                </div>
             </div>
-            <div class="stats">
-                <h2>Statistics</h2>
-                <p>Admins Count: {{ admins_count }}</p>
-                <p>Total Banners Count: {{ banners_count }}</p>
+            <div class="actions-section">
+                <div class="actions-grid">
+                    {% for n in range(1, 10) %}
+                        <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
+                            Action {{ n }}</button>
+                    {% endfor %}
+                </div>
             </div>
         </div>
-        <div class="actions-section">
-            <h2>Actions</h2>
-            <div class="actions-grid">
-                {% for n in range(1, 10) %}
-                <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">Action {{ n }}</button>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-    <div class="right-side">
-        <div class="logs">
-            <h2>Admin Actions Log</h2>
-            <table class="mdc-data-table__table">
-                <thead>
+        <div class="right-side">
+            <div class="logs">
+                <h2>Admin Actions Log</h2>
+                <table class="mdc-data-table__table">
+                    <thead>
                     <tr>
-                        <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Date</th>
                         <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Admin</th>
                         <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Action</th>
+                        <th class="mdc-data-table__header-cell" role="columnheader" scope="col">banner_url</th>
+                        <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Info</th>
+                        <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Date</th>
                     </tr>
-                </thead>
-                <tbody class="mdc-data-table__content">
+                    </thead>
+                    <tbody class="mdc-data-table__content">
                     {% for log in admin_logs %}
-                    <tr class="mdc-data-table__row">
-                        <td class="mdc-data-table__cell">{{ log.date }}</td>
-                        <td class="mdc-data-table__cell">{{ log.admin_name }}</td>
-                        <td class="mdc-data-table__cell">{{ log.action }}</td>
-                    </tr>
+                        <tr class="mdc-data-table__row">
+                            <td class="mdc-data-table__cell">{{ log.admin_id }}</td>
+                            <td class="mdc-data-table__cell">{{ log.translated_action }}</td>
+                            {% if log.banner_url %}
+                                <td class="mdc-data-table__cell"><img src="{{ log.banner_url }}" alt="Banner Preview"/>
+                                </td>
+                            {% else %}
+                                <td class="mdc-data-table__cell"></td>
+                            {% endif %}
+                            <td class="mdc-data-table__cell">{{ log.action_info }}</td>
+                            <td class="mdc-data-table__cell">{{ log.date }}</td>
+                        </tr>
                     {% endfor %}
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    // At the end of your content block, re-initialize MDC Web components for the ripple effect
-    mdc.autoInit();
-</script>
+    <script>
+        const loading = document.getElementById('messedLoading');
+        loading.style.display = 'none';
+
+        document.getElementById('refreshBtn').addEventListener('click', function () {
+            const refreshBtn = document.getElementById('refreshBtn');
+            refreshBtn.style.display = 'none';
+            loading.style.display = 'inline-block';
+
+            fetch('/be/find_messed_banners', {
+                method: 'GET',
+            }).then(function (response) {
+                return response.json();
+            }).then(function (data) {
+                console.log(data);
+                window.location.reload();
+            }).finally(function () {
+                loading.style.display = 'none';
+                refreshBtn.style.display = 'inline-block';
+            });
+        });
+
+        mdc.autoInit();
+    </script>
 {% endblock %}

@@ -1,6 +1,6 @@
 from json import JSONEncoder
 
-from application import db
+from application import app_sqlite_db
 
 
 class DailyBannerItemEncoder(JSONEncoder):
@@ -8,7 +8,7 @@ class DailyBannerItemEncoder(JSONEncoder):
         return {"banner_id": obj.banner_id, "date": obj.date}
 
 
-class DailyBannerItem(db.Model):
-    record_id = db.Column(db.Integer, primary_key=True)
-    banner_id = db.Column(db.String(100), unique=True)
-    date = db.Column(db.BigInteger)
+class DailyBannerItem(app_sqlite_db.Model):
+    record_id = app_sqlite_db.Column(app_sqlite_db.Integer, primary_key=True)
+    banner_id = app_sqlite_db.Column(app_sqlite_db.String(100), unique=True)
+    date = app_sqlite_db.Column(app_sqlite_db.BigInteger)

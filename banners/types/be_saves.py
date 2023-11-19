@@ -13,3 +13,10 @@ class BannersEditorSaves:
         info.admins = json_dct.get("admins", info.admins)
 
         return info
+
+    def try_add_admin(self, admin_data):
+        if admin_data.id not in self.admins:
+            self.admins.append(admin_data.id)
+
+        return self
+

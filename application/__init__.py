@@ -1,19 +1,19 @@
 import firebase_admin
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from firebase_admin import credentials
+from firebase_admin import credentials, firestore
 from flask_login import LoginManager, UserMixin
 
-from application.github_utils import get_cer_data
+from application.github_utils import load_firebase_certificate
 from cat.utils.telegram_utils import send_telegram_msg_to_me
 from config import PROJECT_ID
 
 send_telegram_msg_to_me("Запуск приложения!")
 
 db = SQLAlchemy()
+app = None
 
 sign_up_enabled = True
-
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -43,6 +43,9 @@ def create_app():
     from main.main import main_blueprint
     app.register_blueprint(main_blueprint)
 
+    from banners.ui.banners_dashboard import dashboard_blueprint
+    app.register_blueprint(dashboard_blueprint)
+
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'
     login_manager.init_app(app)
@@ -59,7 +62,7 @@ def create_app():
 def firebase_connect():
     send_telegram_msg_to_me("Подключаюсь к Firebase!")
 
-    cred = credentials.Certificate(get_cer_data())
+    cred = credentials.Certificate(load_firebase_certificate())
 
     firebase_admin.initialize_app(cred, {
         'projectId': PROJECT_ID,

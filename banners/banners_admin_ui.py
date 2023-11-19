@@ -1,7 +1,5 @@
 from flask import Blueprint
 
-from banners.data import get_last_update_time
-
 banners_ui_blueprint = Blueprint('banners_ui', __name__)
 
 

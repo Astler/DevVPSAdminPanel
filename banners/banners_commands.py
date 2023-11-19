@@ -11,8 +11,11 @@ from werkzeug.exceptions import BadRequest
 
 from application import db, send_telegram_msg_to_me
 from application.base_response import BaseResponse
-from banners.data import check_file_by_path, get_last_update_time, set_last_update_time, \
-    banners_editor_saves, add_banners_editor_admin, get_banners_settings
+from application.ios_utils import open_internal_file
+from banners.constants import banners_folder
+from banners.data.banner_server_item import BannerServerItem
+from banners.data.be_server_saves import get_banners_settings, get_last_update_time, set_last_update_time, \
+    local_cached_saves
 from banners.db.daily_banner_item import DailyBannerItem, DailyBannerItemEncoder
 from banners.types.be_admin_data import BannersEditorAdminData
 from banners.types.dialy_banner import DailyBanner
@@ -20,14 +23,6 @@ from cat.utils.ftp_utils import upload_file_to_folder
 from config import BE_BANNERS_MAP, BE_MAP_UPDATE_HOURS, BE_PAGE_SIZE
 
 banners_api_blueprint = Blueprint('banners_api', __name__)
-
-banners_folder = u'shared_banners'
-
-
-class BannerServerItem:
-    name = ""
-    id = ""
-    date = ""
 
 
 def check_admins_banner_request(request_parameters: dict) -> BaseResponse:
@@ -38,10 +33,12 @@ def check_admins_banner_request(request_parameters: dict) -> BaseResponse:
     if not request_parameters.__contains__("id"):
         return BaseResponse(False, "Do you forgot to add banner id?", request_parameters)
 
-    admin_id = request_parameters["admin"]
-    be_server_settings = banners_editor_saves()
+    if local_cached_saves is not None:
+        print("local_cached_saves is not None")
 
-    if not be_server_settings.admins.__contains__(admin_id):
+    admin_id = request_parameters["admin"]
+
+    if not local_cached_saves.admins.__contains__(admin_id):
         return BaseResponse(False, f"User {admin_id} is not admin!", request_parameters)
 
     return BaseResponse(True, request_data=request_parameters)
@@ -151,10 +148,20 @@ def get_paged_previous_banners():
 
 
 @banners_api_blueprint.route('/be/daily_banner', methods=['GET', 'POST'])
-def get_daily_banner():
+def get_daily_banner_json():
     request_parameters = request.args.to_dict()
+    banner = get_daily_banner(request_parameters)
 
-    # Calculate today's date and milliseconds for comparison
+    if banner is None:
+        return BaseResponse(False, "No banner available for the specified date range!",
+                            request_parameters).to_response()
+
+    return str(get_daily_banner().to_json()).replace("\'", "\"")
+
+
+def get_daily_banner(request_parameters=None) -> DailyBanner:
+    if request_parameters is None:
+        request_parameters = {}
     if not request_parameters.__contains__("date"):
         today = datetime.today()
     else:
@@ -176,8 +183,7 @@ def get_daily_banner():
             .first()
 
         if banner is None:
-            return BaseResponse(False, "No banner available for the specified date range!",
-                                request_parameters).to_response()
+            return None
         else:
             banner.last_shown_date = today_milli_seconds
             db.session.delete(banner)
@@ -188,7 +194,8 @@ def get_daily_banner():
 
     response = DailyBanner()
     response.daily_banner_id = banner.banner_id
-    return str(response.to_json()).replace("\'", "\"")
+
+    return response
 
 
 @banners_api_blueprint.route('/be_map_version', methods=['GET'])
@@ -211,7 +218,7 @@ def be_add_admin():
     if len(admin_data.id) == 0:
         raise BadRequest()
 
-    return add_banners_editor_admin(admin_data)
+    return be_add_admin(admin_data)
 
 
 @banners_api_blueprint.route('/be_map', methods=['GET'])
@@ -231,8 +238,7 @@ def get_banners():
         set_last_update_time()
         data = update_server_banners_map()
     else:
-        # send_telegram_msg_to_me("Loading?!")
-        data = check_file_by_path(BE_BANNERS_MAP, "r").read()
+        data = open_internal_file(BE_BANNERS_MAP, "r").read()
 
     return data.replace("\'", "_")
 
@@ -243,7 +249,7 @@ def be_check_empty_patterns():
 
 
 def update_server_banners_map() -> str:
-    file = check_file_by_path(BE_BANNERS_MAP, "w")
+    file = open_internal_file(BE_BANNERS_MAP, "w")
 
     db = firestore.client()
 

@@ -1,5 +1,4 @@
 import json
-from typing import Any, Union, List
 
 from github import GithubException
 
@@ -19,7 +18,7 @@ def get_a_list() -> [str]:
 # Common
 ###
 
-def load_git_json(path: str) -> Union[dict[Any, Any], List[Any]]:
+def load_git_json(path: str):
     file_content = load_git_file(path)
 
     if len(file_content) == 0:

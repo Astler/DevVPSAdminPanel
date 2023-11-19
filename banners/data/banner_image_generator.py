@@ -42,15 +42,41 @@ def get_mock_banner_data(banner_id):
     return json.loads(banner_json)
 
 
-def apply_color_to_image(image, color):
+def apply_color_to_image(image, color_name):
     # Convert the hex color to an RGBA tuple
-    color = ImageColor.getrgb(color) + (255,)
+    color_name = ImageColor.getrgb(get_minecraft_color_by_name(color_name)) + (255,)
 
     # Create a solid color image and composite it using the source alpha
-    color_layer = Image.new('RGBA', image.size, color)
+    color_layer = Image.new('RGBA', image.size, color_name)
     colored_image = ImageChops.multiply(image, color_layer)
 
     return colored_image
+
+
+def get_minecraft_color_by_name(item_name: str) -> str:
+    colors = {
+        "white": "#FFFFFF",
+        "light_gray": "#999999",
+        "light_blue": "#6699D8",
+        "orange": "#D87F33",
+        "magenta": "#B24CD8",
+        "yellow": "#E5E533",
+        "lime": "#7FCC19",
+        "pink": "#F27FA5",
+        "gray": "#4C4C4C",
+        "cyan": "#4C7F99",
+        "purple": "#7F3FB2",
+        "blue": "#334CB2",
+        "brown": "#664C33",
+        "green": "#667F33",
+        "red": "#993333",
+        "black": "#191919"
+    }
+
+    for color_name, hex_value in colors.items():
+        if color_name in item_name:
+            return hex_value
+    return "#FFFFFF"  # default color if no match found
 
 
 def upscale_image(image, factor):

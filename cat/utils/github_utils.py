@@ -7,7 +7,7 @@ from config import CERT_PATH, A_PATH
 from loader import repository
 
 
-def load_firebase_certificate() -> dict[Any, Any]:
+def load_firebase_certificate():
     return load_git_json(CERT_PATH)
 
 

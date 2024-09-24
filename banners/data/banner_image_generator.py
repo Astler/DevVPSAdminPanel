@@ -4,7 +4,9 @@ import json
 import os
 
 from PIL import Image, ImageColor, ImageChops
-from firebase_admin import firestore
+
+import config
+from application import get_db
 
 
 def get_image_data_url_by_id(banner_id, scale=10):
@@ -20,7 +22,7 @@ def get_image_data_url(layers, scale=10):
 
 
 def get_banner_data_from_firestore(banner_id):
-    firestore_db = firestore.client()
+    firestore_db = get_db(config.MC_PROJECT_ID)
 
     try:
         banner_ref = firestore_db.collection('shared_banners').document(banner_id)

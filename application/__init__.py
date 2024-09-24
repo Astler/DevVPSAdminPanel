@@ -1,19 +1,17 @@
 import firebase_admin
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from firebase_admin import credentials
+from firebase_admin import credentials, firestore
 from flask_login import LoginManager, UserMixin
 
 from cat.utils.github_utils import load_firebase_certificate
 from cat.utils.telegram_utils import send_telegram_msg_to_me
-from config import PROJECT_ID
+from config import PROJECT_ID, CERT_PATH, MC_PROJECT_ID, MC_CERT_PATH
 
 send_telegram_msg_to_me("Запуск приложения!")
 
 app_sqlite_db = SQLAlchemy()
 app = None
-
-sign_up_enabled = True
 
 
 class User(UserMixin, app_sqlite_db.Model):
@@ -29,6 +27,8 @@ def create_app():
 
     app.config['SECRET_KEY'] = 'secret-key-goes-here'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+
+    app.config['SIGN_UP_ENABLED'] = True
 
     app_sqlite_db.init_app(app)
 
@@ -59,16 +59,26 @@ def create_app():
     with app.app_context():
         app_sqlite_db.create_all()
 
+    firebase_connect_multiple()
 
-def firebase_connect():
-    send_telegram_msg_to_me("Подключаюсь к Firebase!")
+    return app
 
-    cred = credentials.Certificate(load_firebase_certificate())
 
-    firebase_admin.initialize_app(cred, {
+def firebase_connect_multiple():
+    send_telegram_msg_to_me("Подключаюсь к нескольким проектам Firebase!")
+
+    admin_cred = credentials.Certificate(load_firebase_certificate(CERT_PATH))
+    first_app = firebase_admin.initialize_app(admin_cred, {
         'projectId': PROJECT_ID,
-    })
+    }, name=PROJECT_ID)
+
+    mc_cred = credentials.Certificate(load_firebase_certificate(MC_CERT_PATH))
+    second_app = firebase_admin.initialize_app(mc_cred, {
+        'projectId': MC_PROJECT_ID,
+    }, name=MC_PROJECT_ID)
+
+    return first_app, second_app
 
 
-create_app()
-firebase_connect()
+def get_db(app_name):
+    return firestore.client(app=firebase_admin.get_app(name=app_name))

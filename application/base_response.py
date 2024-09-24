@@ -1,6 +1,4 @@
-from flask import Response, json
-
-from application import app
+from flask import Response, json, current_app
 
 
 class BaseResponse:
@@ -16,7 +14,7 @@ class BaseResponse:
             self.__dict__[field] = request_data[field]
 
     def to_response(self) -> Response:
-        return app.response_class(response=json.dumps(self.__dict__),
+        return current_app.response_class(response=json.dumps(self.__dict__),
                                   status=200 if self.success else 400,
                                   mimetype='application/json')
 

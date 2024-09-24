@@ -12,7 +12,7 @@ from banners.data.banner_image_generator import get_image_data_url
 from banners.data.be_server_saves import read_banners_saves
 from banners.db.admin_action_item import AdminActionItem, AdminAction
 from banners.db.daily_banner_item import DailyBannerItem
-from cat.utils.firebase_utils import get_firestore_collection
+from cat.utils.firebase_utils import get_mc_firestore_collection
 from cat.utils.telegram_utils import send_telegram_msg_to_me
 
 
@@ -73,7 +73,7 @@ def add_to_daily(request) -> Response:
     if banner_with_id is not None:
         return BaseResponse(False, f"Banner with this ID {banner_id} already is queue!", content).to_response()
 
-    banner_ref = get_firestore_collection(banners_folder).document(banner_id)
+    banner_ref = get_mc_firestore_collection(banners_folder).document(banner_id)
     banner_data = banner_ref.get().to_dict()
 
     if banner_data is None:
@@ -98,7 +98,7 @@ def add_to_daily(request) -> Response:
 
     app_sqlite_db.session.add(new_banner)
 
-    banner_ref = get_firestore_collection(banners_folder).document(banner_id)
+    banner_ref = get_mc_firestore_collection(banners_folder).document(banner_id)
     banner_data = banner_ref.get().to_dict()
 
     app_sqlite_db.session.add(
@@ -124,7 +124,7 @@ def delete_banner(request) -> Response:
     admin_id = content["admin"]
     banner_id = content["id"]
 
-    banner_ref = get_firestore_collection(banners_folder).document(banner_id)
+    banner_ref = get_mc_firestore_collection(banners_folder).document(banner_id)
     banner_data = banner_ref.get().to_dict()
 
     if banner_data is None:

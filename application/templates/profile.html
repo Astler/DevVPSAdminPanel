@@ -4,4 +4,7 @@
 <h1 class="title">
   Welcome, {{ name }}!
 </h1>
+{% if is_banner_admin %}
+<a href="{{ url_for('dashboard_blueprint.banners_dashboard') }}" class="button">Banners Admin</a>
+{% endif %}
 {% endblock %}

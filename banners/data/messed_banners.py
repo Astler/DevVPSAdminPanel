@@ -6,7 +6,7 @@ from typing import Optional, Any
 from banners.constants import banners_folder, incorrect_banners_data
 from banners.data.banner_firebase_item import BannerFirebaseItem
 from banners.data.messed_banners_info import MessedBannersInfo
-from cat.utils.firebase_utils import get_firestore_collection
+from cat.utils.firebase_utils import get_mc_firestore_collection
 from cat.utils.ios_utils import open_internal_file
 from cat.utils.telegram_utils import send_telegram_msg_to_me
 
@@ -24,7 +24,7 @@ def messed_banners_info() -> MessedBannersInfo:
 
 
 def find_messed_banners() -> str:
-    docs = get_firestore_collection(banners_folder).stream()
+    docs = get_mc_firestore_collection(banners_folder).stream()
 
     items = []
 

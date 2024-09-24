@@ -1,10 +1,36 @@
 {% extends "base.html" %}
-
+{% block title %}Welcome{% endblock %}
 {% block content %}
-<h1 class="title">
-  Flask Login Example
-</h1>
-<h2 class="subtitle">
-  Easy authentication and authorization in Flask.
-</h2>
+<div class="welcome-container">
+    <h2>Welcome to Press F Admin Panel</h2>
+    <div class="button-container">
+        <button onclick="window.location.href='{{ url_for('auth.login') }}'">Login</button>
+        <button onclick="window.location.href='{{ url_for('auth.signup') }}'">Sign Up</button>
+    </div>
+</div>
+
+<style>
+    .welcome-container {
+        width: 80%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
+    .button-container {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-top: 24px;
+    }
+
+    .button-container button {
+        width: 100%;
+    }
+
+    @media (min-width: 480px) {
+        .welcome-container {
+            max-width: 400px;
+        }
+    }
+</style>
 {% endblock %}

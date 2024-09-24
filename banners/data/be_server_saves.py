@@ -76,6 +76,10 @@ def read_banners_saves() -> BannersEditorSaves:
         saves = BannersEditorSaves()
         write_banners_saves(saves)
 
+    db = get_db(config.PROJECT_ID)
+    allowed_emails = db.collection('admins').document('banners_editor').get().to_dict()
+
+    saves.admins = allowed_emails.get('emails', [])
 
     if __local_cached_saves is None:
         __local_cached_saves = saves

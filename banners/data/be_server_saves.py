@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 
 import config
-from application import app_sqlite_db
+from application import app_sqlite_db, get_db
 from cat.utils.ios_utils import open_internal_file
 from banners.db.daily_banner_item import DailyBannerItem
 from banners.types.be_admin_data import BannersEditorAdminData
@@ -37,7 +37,10 @@ def get_banners_settings() -> str:
 
     saves = read_banners_saves()
 
-    settings.admins = saves.admins
+    db = get_db(config.PROJECT_ID)
+    allowed_emails = db.collection('admins').document('banners_editor').get().to_dict()
+
+    settings.admins = allowed_emails.get('emails', [])
     settings.map_update_time = saves.map_update_time
     settings.daily_banner_id = banner_for_date.banner_id
 

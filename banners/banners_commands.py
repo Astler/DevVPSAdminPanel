@@ -3,7 +3,7 @@ from flask import Blueprint, request
 from application.base_response import BaseResponse
 from banners.data.banners_mapping import get_mapping
 from banners.data.be_server_saves import get_banners_settings
-from banners.data.daily_banners import get_daily_banner, get_daily_banners
+from banners.data.daily_banners import get_daily_banner, get_all_daily_banners
 from banners.data.messed_banners import find_messed_banners
 
 banners_api_blueprint = Blueprint('banners_api', __name__)
@@ -11,7 +11,7 @@ banners_api_blueprint = Blueprint('banners_api', __name__)
 
 @banners_api_blueprint.route('/be/daily_banners', methods=['GET', 'POST'])
 def get_paged_banners():
-    return get_daily_banners(request)
+    return get_all_daily_banners(request)
 
 
 @banners_api_blueprint.route('/be/daily_banner', methods=['GET', 'POST'])

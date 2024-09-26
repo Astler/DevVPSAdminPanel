@@ -49,10 +49,9 @@
 
         .main-content {
             flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 32px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .auth-container {
@@ -61,8 +60,13 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 32px;
             width: 100%;
-            max-width: 400px;
+            max-width: none;
             box-sizing: border-box;
+        }
+
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         h2 {
@@ -164,7 +168,7 @@
         }
 
 
-     .toolbar {
+        .toolbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -204,21 +208,24 @@
         }
 
         /* ... (keep the rest of your existing styles) ... */
+
     </style>
 </head>
 <body>
-    <header class="toolbar">
-        <h1>Press F Admin Panel</h1>
-        {% if current_user.is_authenticated %}
+<header class="toolbar">
+    <h1>Press F Admin Panel</h1>
+    {% if current_user.is_authenticated %}
         <button class="signout-button" onclick="window.location.href='{{ url_for('auth.logout') }}'" title="Sign Out">
             <span class="material-icons">logout</span>
         </button>
-        {% endif %}
-    </header>
-    <main class="main-content">
-        <div class="auth-container">
+    {% endif %}
+</header>
+<main class="main-content">
+    <div class="auth-container">
+        <div class="content-wrapper">
             {% block content %}{% endblock %}
         </div>
-    </main>
+    </div>
+</main>
 </body>
 </html>

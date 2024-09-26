@@ -57,6 +57,7 @@ def __check_admins_request(request_parameters: dict) -> BaseResponse:
     return BaseResponse(True, request_data=request_parameters)
 
 
+#http://127.0.0.1:5000/be/to_daily_queue?admin=vladyclaw@gmail.com&id=653abae7-057d-48a1-9362-ca3531d1ee1a
 def add_to_daily(request) -> Response:
     content = request.args.to_dict()
 

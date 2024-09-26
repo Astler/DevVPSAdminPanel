@@ -9,7 +9,24 @@ from banners.types.dialy_banner import DailyBanner
 from config import BE_PAGE_SIZE
 
 
-def get_daily_banners(request=None) -> str:
+def get_daily_banners(page=0) -> []:
+    banners = app_sqlite_db.session.query(DailyBannerItem).order_by(DailyBannerItem.date.desc())
+
+    selection = []
+
+    last_item_index = (page + 1) * BE_PAGE_SIZE
+    first_item_index = page * BE_PAGE_SIZE
+
+    if banners.count() < last_item_index:
+        last_item_index = banners.count()
+
+    for banner in banners[first_item_index:last_item_index]:
+        selection.append(banner)
+
+    return selection
+
+
+def get_all_daily_banners(request=None) -> str:
     request_parameters = request.args.to_dict()
 
     if not request_parameters.__contains__("page"):

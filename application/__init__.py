@@ -3,6 +3,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from firebase_admin import credentials, firestore
 from flask_login import LoginManager, UserMixin
+from flask_migrate import Migrate
 
 from cat.utils.github_utils import load_firebase_certificate
 from cat.utils.telegram_utils import send_telegram_msg_to_me
@@ -11,6 +12,7 @@ from config import PROJECT_ID, CERT_PATH, MC_PROJECT_ID, MC_CERT_PATH
 send_telegram_msg_to_me("Запуск приложения!")
 
 app_sqlite_db = SQLAlchemy()
+migrate = Migrate()
 app = None
 
 import os
@@ -37,6 +39,7 @@ def create_app():
     os.makedirs(app.instance_path, exist_ok=True)
 
     app_sqlite_db.init_app(app)
+    migrate.init_app(app, app_sqlite_db)
 
     from banners.api.v2.common.banners_commands import banners_api_blueprint
     app.register_blueprint(banners_api_blueprint)

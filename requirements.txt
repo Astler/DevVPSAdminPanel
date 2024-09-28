@@ -60,3 +60,4 @@ wrapt==1.14.1
 WTForms==3.0.1
 zipp==3.9.0
 pillow==10.1.0
+Flask-Migrate==4.0.7

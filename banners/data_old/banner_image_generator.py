@@ -11,10 +11,15 @@ from application import get_db
 
 def get_image_data_url_by_id(banner_id, scale=10):
     banner_data = get_mock_banner_data(banner_id)
+    if banner_data is None:
+        return None
     return get_image_data_url(banner_data['mlayers'], scale)
 
 
 def get_image_data_url(layers, scale=10):
+    if not layers:
+        return None
+
     banner_image_io = create_banner(layers, scale)
 
     img_base64 = base64.b64encode(banner_image_io.getvalue()).decode('utf-8')

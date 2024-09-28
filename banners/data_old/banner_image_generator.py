@@ -38,7 +38,7 @@ def get_banner_data_from_firestore(banner_id):
         return None
 
 
-# Mock function to simulate getting banner data
+# Mock function to simulate getting banner data_old
 def get_mock_banner_data(banner_id):
     banner_json = json.dumps(get_banner_data_from_firestore(banner_id))
     return json.loads(banner_json)

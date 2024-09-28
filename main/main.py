@@ -1,17 +1,9 @@
 from flask import Blueprint, render_template, current_app, redirect, url_for
 from flask_login import login_required, current_user
-from firebase_admin import firestore
 
-from application import get_db
-from config import PROJECT_ID
+from banners.data.admin_repository import is_banner_admin
 
 main_blueprint = Blueprint('main', __name__)
-
-
-def is_banner_admin(email):
-    db = get_db(PROJECT_ID)
-    allowed_emails = db.collection('admins').document('banners_editor').get().to_dict()
-    return email in allowed_emails.get('emails', []) if allowed_emails else False
 
 
 @main_blueprint.route('/')

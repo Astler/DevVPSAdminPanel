@@ -38,11 +38,14 @@ def create_app():
 
     app_sqlite_db.init_app(app)
 
-    from banners.banners_commands import banners_api_blueprint
+    from banners.api.v2.common.banners_commands import banners_api_blueprint
     app.register_blueprint(banners_api_blueprint)
 
-    from banners.admin_commands import banners_admin
+    from banners.api.v2.admin.admin_commands import banners_admin
     app.register_blueprint(banners_admin)
+
+    from banners.api.v2.internal.internal_commands import admins_internal
+    app.register_blueprint(admins_internal)
 
     from auth.auth import auth_blueprint
     app.register_blueprint(auth_blueprint)
@@ -50,8 +53,14 @@ def create_app():
     from main.main import main_blueprint
     app.register_blueprint(main_blueprint)
 
-    from banners.ui.banners_dashboard import dashboard_blueprint
+    from banners.dashboard.banners_dashboard import dashboard_blueprint
     app.register_blueprint(dashboard_blueprint)
+
+    from banners.dashboard.deleted_banners_list import deleted_banners_blueprint
+    app.register_blueprint(deleted_banners_blueprint)
+
+    from banners.dashboard.daily_banners_list import daily_banners_blueprint
+    app.register_blueprint(daily_banners_blueprint)
 
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'

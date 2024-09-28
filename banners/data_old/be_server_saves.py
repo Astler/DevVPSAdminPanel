@@ -4,11 +4,10 @@ from datetime import datetime
 
 import config
 from application import app_sqlite_db, get_db
-from cat.utils.ios_utils import open_internal_file
-from banners.db.daily_banner_item import DailyBannerItem
-from banners.types.be_admin_data import BannersEditorAdminData
+from banners.data.daily.daily_banner_item import DailyBannerItem
 from banners.types.be_saves import BannersEditorSaves
 from banners.types.be_settings import BannersEditorSettings
+from cat.utils.ios_utils import open_internal_file
 
 __local_cached_saves: BannersEditorSaves = None
 
@@ -48,15 +47,6 @@ def get_banners_settings() -> str:
 
 
 #
-# Admins
-#
-
-def register_admin(admin_data: BannersEditorAdminData) -> str:
-    write_banners_saves(read_banners_saves().try_add_admin(admin_data))
-    return "Admin added!"
-
-
-#
 # Save/Read actually
 #
 
@@ -75,11 +65,6 @@ def read_banners_saves() -> BannersEditorSaves:
     else:
         saves = BannersEditorSaves()
         write_banners_saves(saves)
-
-    db = get_db(config.PROJECT_ID)
-    allowed_emails = db.collection('admins').document('banners_editor').get().to_dict()
-
-    saves.admins = allowed_emails.get('emails', [])
 
     if __local_cached_saves is None:
         __local_cached_saves = saves

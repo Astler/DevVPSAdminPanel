@@ -151,16 +151,16 @@
             <div class="actions-grid">
                 <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
                     <span class="mdc-button__ripple"></span>
-                    <a class="mdc-button__label" href="{{ url_for('dashboard_blueprint.daily_banners_list') }}">All
+                    <a class="mdc-button__label" href="{{ url_for('daily_banners.daily_banners_list') }}">All
                         Daily Banners</a>
                 </button>
                 <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
                     <span class="mdc-button__ripple"></span>
-                    <a class="mdc-button__label" href="{{ url_for('dashboard_blueprint.daily_banners_list') }}">Populate Banners For A Week</a>
+                    <a class="mdc-button__label" href="{{ url_for('daily_banners.daily_banners_list') }}">Populate Banners For A Week</a>
                 </button>
                 <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
                     <span class="mdc-button__ripple"></span>
-                    <a class="mdc-button__label" href="{{ url_for('dashboard_blueprint.daily_banners_list') }}">Deleted</a>
+                    <a class="mdc-button__label" href="{{ url_for('deleted_banners.deleted_banners_list') }}">Deleted</a>
                 </button>
                 {% for n in range(4, 10) %}
                     <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">

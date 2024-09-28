@@ -22,13 +22,13 @@ class AdminAction(Enum):
 
 class AdminActionItemEncoder(JSONEncoder):
     def default(self, obj):
-        return {"admin_id": obj.admin_id, "action_info": obj.action_info, "date": obj.date,
+        return {"admin": obj.admin, "action_data": obj.action_data, "date": obj.date,
                 "action": obj.admin_action}
 
 
-class AdminActionItem(app_sqlite_db.Model):
+class ActionItem(app_sqlite_db.Model):
     record_id = app_sqlite_db.Column(app_sqlite_db.Integer, primary_key=True)
-    admin_id = app_sqlite_db.Column(app_sqlite_db.String(200))
-    action_info = app_sqlite_db.Column(app_sqlite_db.String(200))
+    admin = app_sqlite_db.Column(app_sqlite_db.String(200))
+    action_data = app_sqlite_db.Column(app_sqlite_db.String(200))
     action = app_sqlite_db.Column(app_sqlite_db.Integer)
     date = app_sqlite_db.Column(app_sqlite_db.BigInteger)

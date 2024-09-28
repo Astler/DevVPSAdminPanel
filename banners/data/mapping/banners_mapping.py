@@ -2,11 +2,10 @@ import json
 import os
 import time
 
-from banners.constants import banners_folder
-from banners.data.banner_firebase_item import BannerFirebaseItem
-from banners.data.banner_server_item import BannerServerItem
-from banners.data.be_server_saves import __local_cached_saves, read_banners_saves, write_banners_saves
-from cat.utils.firebase_utils import get_mc_firestore_collection
+from banners.data.firebase.firestore_repository import get_be_shared
+from banners.data.firebase.banner_firebase_item import BannerFirebaseItem
+from banners.data.mapping.banner_server_item import BannerServerItem
+from banners.data_old.be_server_saves import read_banners_saves, write_banners_saves
 from cat.utils.ftp_utils import upload_file_to_folder
 from cat.utils.ios_utils import open_internal_file
 from cat.utils.telegram_utils import send_telegram_msg_to_me
@@ -57,7 +56,7 @@ def get_mapping() -> str:
 
 
 def generate_and_upload_banners_map() -> str:
-    docs = get_mc_firestore_collection(banners_folder).stream()
+    docs = get_be_shared().stream()
 
     items = []
 

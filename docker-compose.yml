@@ -1,17 +1,18 @@
 version: "3.8"
 
-networks:
-    default:
-        external: true
-
 services:
    default:
         build: .
         ports:
             - "49999:49999"
         volumes:
-            - m8cww0gcog400c4kws4kkc88-Admin Panel Volume:/instance
+            - admin_panel_volume:/instance
         environment:
             - FLASK_APP=app.py
             - FLASK_ENV=production
             - FLASK_DEBUG=0
+
+volumes:
+    admin_panel_volume:
+        external: true
+        name: m8cww0gcog400c4kws4kkc88-Admin_Panel_Volume

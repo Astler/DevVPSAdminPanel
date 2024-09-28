@@ -13,6 +13,10 @@ send_telegram_msg_to_me("Запуск приложения!")
 app_sqlite_db = SQLAlchemy()
 app = None
 
+import os
+
+file_path = os.path.abspath(os.getcwd()) + "/app/instance/db.sqlite"
+
 
 class User(UserMixin, app_sqlite_db.Model):
     id = app_sqlite_db.Column(app_sqlite_db.Integer, primary_key=True)
@@ -53,7 +57,6 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
-        # since the user_id is just the primary key of our user table, use it in the query for the user
         return User.query.get(int(user_id))
 
     with app.app_context():

@@ -48,7 +48,7 @@ def delete_banner(request) -> Response:
 
     send_telegram_msg_to_me(f"Admin with id {admin_id} requested deletion of this banner {banner_id}\n\n{banner_data}")
 
-    app_sqlite_db.session.add(DeletedBanner(banner_id=admin_id, data=json.dumps(banner_data), date=time.time()))
+    app_sqlite_db.session.add(DeletedBannerItem(id=admin_id, content=json.dumps(banner_data), date=time.time()))
     app_sqlite_db.session.commit()
 
     try:

@@ -158,7 +158,11 @@
                     <span class="mdc-button__ripple"></span>
                     <a class="mdc-button__label" href="{{ url_for('dashboard_blueprint.daily_banners_list') }}">Populate Banners For A Week</a>
                 </button>
-                {% for n in range(3, 10) %}
+                <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
+                    <span class="mdc-button__ripple"></span>
+                    <a class="mdc-button__label" href="{{ url_for('dashboard_blueprint.daily_banners_list') }}">Deleted</a>
+                </button>
+                {% for n in range(4, 10) %}
                     <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
                         <span class="mdc-button__ripple"></span>
                         <span class="mdc-button__label">Action {{ n }}</span>

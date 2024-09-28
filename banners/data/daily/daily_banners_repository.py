@@ -95,7 +95,7 @@ def add_to_daily(request) -> Response:
     return BaseResponse(True).to_response()
 
 
-def get_daily_banner(request_parameters=None) -> DailyBanner | None:
+def get_daily_banner(request_parameters=None) -> DailyBanner:
     if request_parameters is None:
         request_parameters = {}
     if not request_parameters.__contains__("date"):

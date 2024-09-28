@@ -27,10 +27,10 @@ class User(UserMixin, app_sqlite_db.Model):
 
 def create_app():
     global app
-    app = Flask(__name__)
+    app = Flask(__name__, instance_path='/instance')
 
     app.config['SECRET_KEY'] = 'secret-key-goes-here'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////db.sqlite'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////instance/db.sqlite'
 
     app.config['SIGN_UP_ENABLED'] = True
 

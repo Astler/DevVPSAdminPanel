@@ -1,4 +1,4 @@
-version: "1"
+version: "3.8"
 
 networks:
     default:
@@ -6,5 +6,12 @@ networks:
 
 services:
    default:
+        build: .
         ports:
             - "49999:49999"
+        volumes:
+            - m8cww0gcog400c4kws4kkc88-Admin Panel Volume:/instance
+        environment:
+            - FLASK_APP=app.py
+            - FLASK_ENV=production
+            - FLASK_DEBUG=0

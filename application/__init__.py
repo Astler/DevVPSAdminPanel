@@ -30,9 +30,11 @@ def create_app():
     app = Flask(__name__)
 
     app.config['SECRET_KEY'] = 'secret-key-goes-here'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////db.sqlite'
 
     app.config['SIGN_UP_ENABLED'] = True
+
+    os.makedirs(app.instance_path, exist_ok=True)
 
     app_sqlite_db.init_app(app)
 

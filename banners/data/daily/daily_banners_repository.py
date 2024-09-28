@@ -7,7 +7,7 @@ from sqlalchemy import func
 
 from application import app_sqlite_db
 from application.base_response import BaseResponse
-from banners.data.actions.action_item import ActionItem, AdminAction
+from banners.data.actions.action_item import AdminActionModel, AdminAction
 from banners.data.admin_repository import admin_validation
 from banners.data.daily.daily_banner_item import DailyBannerItem, DailyBannerItemEncoder
 from banners.data.daily.dialy_banner import DailyBanner
@@ -83,9 +83,11 @@ def add_to_daily(request) -> Response:
     new_banner = DailyBannerItem(banner_id=banner_id, date=date)
     app_sqlite_db.session.add(new_banner)
 
-    app_sqlite_db.session.add(
-        ActionItem(admin_id=admin_id, action_info=json.dumps(banner_data), action=int(AdminAction.AddedDaily),
-                   date=time.time()))
+    app_sqlite_db.session.add(AdminActionModel.build(
+        admin_id=admin_id,
+        action_info=banner_data,
+        action=AdminAction.AddedDaily
+    ))
 
     app_sqlite_db.session.commit()
 

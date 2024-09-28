@@ -3,18 +3,19 @@ from datetime import datetime
 from flask import redirect, url_for, request, render_template, Blueprint
 from flask_login import login_required, current_user
 
+from admin.data.flask_login import check_is_admin_or_exit
+from admin.data.project_ids import ProjectId
 from banners.data.daily.daily_banners_repository import get_daily_banners
 
 from banners.data_old.banner_image_generator import get_image_data_url_by_id
-from main.main import is_banner_admin
 
 daily_banners_blueprint = Blueprint('daily_banners', __name__)
 
 @daily_banners_blueprint.route('/be/dashboard/daily_banners')
 @login_required
 def daily_banners_list():
-    if not is_banner_admin(current_user.email):
-        return redirect(url_for('main.profile'))
+    if not check_is_admin_or_exit(ProjectId.BANNERS_EDITOR):
+        return
 
     page = request.args.get('page', 0, type=int)
     daily_banners_data = get_daily_banners(page)

@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, current_app, redirect, url_for
 from flask_login import login_required, current_user
 
-from banners.data.admin_repository import is_banner_admin
+from admin.data.firebase.firestore_admin_content import is_admin
+from admin.data.project_ids import ProjectId
 
 main_blueprint = Blueprint('main', __name__)
 
@@ -16,8 +17,8 @@ def index():
 @main_blueprint.route('/profile')
 @login_required
 def profile():
-    is_admin = is_banner_admin(current_user.email)
+    is_be_admin = is_admin(current_user.email, ProjectId.BANNERS_EDITOR)
     return render_template('profile.html',
                            name=current_user.name,
                            sign_up_enabled=current_app.config['SIGN_UP_ENABLED'],
-                           is_banner_admin=is_admin)
+                           is_banner_admin=is_be_admin)

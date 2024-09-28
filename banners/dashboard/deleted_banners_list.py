@@ -1,31 +1,33 @@
-import json
-from datetime import datetime
+from flask import request, render_template, Blueprint
+from flask_login import login_required
+from typing import List, Dict
 
-from flask import redirect, url_for, request, render_template, Blueprint
-from flask_login import login_required, current_user
-
+from admin.data.flask_login import check_is_admin_or_exit
+from admin.data.project_ids import ProjectId
 from banners.data.delete.deleting_repository import get_deleted_banners
-from banners.data_old.banner_image_generator import get_image_data_url
-from main.main import is_banner_admin
+from banners.types.deleted_banner import DeletedBannerModel
 
 deleted_banners_blueprint = Blueprint('deleted_banners', __name__)
+
+def get_page_number() -> int:
+    return request.args.get('page', 0, type=int)
+
+def fetch_deleted_banners(page: int) -> List[DeletedBannerModel]:
+    return get_deleted_banners(page)
+
+def prepare_banners_for_ui(banners: List[DeletedBannerModel]) -> List[Dict]:
+    return [banner.to_ui_info() for banner in banners]
 
 @deleted_banners_blueprint.route('/be/dashboard/deleted_banners')
 @login_required
 def deleted_banners_list():
-    if not is_banner_admin(current_user.email):
-        return redirect(url_for('main.profile'))
+    if not check_is_admin_or_exit(ProjectId.BANNERS_EDITOR):
+        return
 
-    page = request.args.get('page', 0, type=int)
-    daily_banners_data = get_deleted_banners(page)
+    page = get_page_number()
+    deleted_banners_data = fetch_deleted_banners(page)
+    banners_with_images = prepare_banners_for_ui(deleted_banners_data)
 
-    banners_with_images = []
-    for banner in daily_banners_data:
-        banner_dict = {
-            'banner_id': banner.id,
-            'date': datetime.fromtimestamp(banner.date / 1000).strftime('%Y-%m-%d %H:%M:%S'),
-            'image_url': get_image_data_url(json.loads(banner.layers)) if banner.layers else None
-        }
-        banners_with_images.append(banner_dict)
-
-    return render_template('deleted_banners_list.html', daily_banners=banners_with_images, page=page)
+    return render_template('deleted_banners_list.html',
+                           daily_banners=banners_with_images,
+                           page=page)

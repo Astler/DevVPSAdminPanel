@@ -1,12 +1,13 @@
-from flask import Blueprint, render_template, current_app, redirect, url_for
-from flask_login import login_required, current_user
+from flask import Blueprint, render_template, current_app
+from flask_login import login_required
 
+from admin.data.flask_login import check_is_admin_or_exit
+from admin.data.project_ids import ProjectId
 from banners.api.v2.common.banners_commands import get_daily_banner
 from banners.data.actions.actions_repository import get_all_actions
-from banners.data_old.banner_image_generator import get_image_data_url_by_id
 from banners.data.mapping.banners_mapping import get_last_mapping_update, count_mapped_banners
 from banners.data.messed_validator.messed_banners import messed_banners_info, find_messed_banners
-from main.main import is_banner_admin
+from banners.data_old.banner_image_generator import get_image_data_url_by_id
 
 dashboard_blueprint = Blueprint('dashboard_blueprint', __name__)
 
@@ -14,8 +15,8 @@ dashboard_blueprint = Blueprint('dashboard_blueprint', __name__)
 @dashboard_blueprint.route('/be/dashboard')
 @login_required
 def banners_dashboard():
-    if not is_banner_admin(current_user.email):
-        return redirect(url_for('main.profile'))
+    if not check_is_admin_or_exit(ProjectId.BANNERS_EDITOR):
+        return
 
     daily_banner_data = get_daily_banner()
 

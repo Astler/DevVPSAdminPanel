@@ -1,3 +1,5 @@
+import json
+from datetime import datetime
 from enum import Enum
 from json import JSONEncoder
 
@@ -26,9 +28,18 @@ class AdminActionItemEncoder(JSONEncoder):
                 "action": obj.admin_action}
 
 
-class ActionItem(app_sqlite_db.Model):
+class AdminActionModel(app_sqlite_db.Model):
     record_id = app_sqlite_db.Column(app_sqlite_db.Integer, primary_key=True)
     admin = app_sqlite_db.Column(app_sqlite_db.String(200))
     action_data = app_sqlite_db.Column(app_sqlite_db.String(200))
     action = app_sqlite_db.Column(app_sqlite_db.Integer)
     date = app_sqlite_db.Column(app_sqlite_db.BigInteger)
+
+    @classmethod
+    def build(cls, admin_id: str, action: AdminAction, action_info: dict) -> 'AdminActionModel':
+        return cls(
+            admin=admin_id,
+            action_data=json.dumps(action_info),
+            action=int(action),
+            date=int(datetime.now().timestamp())
+        )

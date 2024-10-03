@@ -50,7 +50,6 @@ def add_to_daily(request) -> Response:
     content = request.args.to_dict()
 
     check_result = admin_validation(content)
-
     if not check_result.success:
         return check_result.to_response()
 
@@ -59,28 +58,25 @@ def add_to_daily(request) -> Response:
 
     check_for_duplicate = app_sqlite_db.session.query(DailyBannerItem).filter(
         DailyBannerItem.banner_id == banner_id).first()
-
     if check_for_duplicate is not None:
-        return BaseResponse(False, f"Banner with this ID {banner_id} already is queue!", content).to_response()
+        return BaseResponse(False, f"Banner with this ID {banner_id} is already in queue!", content).to_response()
 
     banner_data = get_be_shared().document(banner_id).get().to_dict()
-
     if banner_data is None:
         return BaseResponse(False, f"Banner with id {banner_id} not found!", content).to_response()
 
-    last_day_banner = app_sqlite_db.session.query(DailyBannerItem).order_by(DailyBannerItem.record_id.desc()).first()
+    today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_timestamp = int(today.timestamp() * 1000)
 
-    today = datetime.today().strftime('%Y-%m-%d') + " 00:00:00"
-    dt_obj = datetime.strptime(today, '%Y-%m-%d %H:%M:%S')
-    milli_seconds = dt_obj.timestamp() * 1000
+    next_available_date = today_timestamp
+    while True:
+        existing_banner = app_sqlite_db.session.query(DailyBannerItem).filter(
+            DailyBannerItem.date == next_available_date).first()
+        if existing_banner is None:
+            break
+        next_available_date += 86400000  # Add one day in milliseconds
 
-    if last_day_banner is None:
-        date = milli_seconds
-    else:
-        date = last_day_banner.date + 86400000
-
-    date_for_banner = time.strftime('%Y-%m-%d %H:%M:%S:{}'.format(date % 1000), time.gmtime(date / 1000.0))
-    new_banner = DailyBannerItem(banner_id=banner_id, date=date)
+    new_banner = DailyBannerItem(banner_id=banner_id, date=next_available_date)
     app_sqlite_db.session.add(new_banner)
 
     app_sqlite_db.session.add(AdminActionModel.build(
@@ -90,6 +86,8 @@ def add_to_daily(request) -> Response:
     ))
 
     app_sqlite_db.session.commit()
+
+    date_for_banner = datetime.fromtimestamp(next_available_date / 1000.0).strftime('%Y-%m-%d %H:%M:%S')
 
     send_telegram_msg_to_me(
         f"Admin with id {admin_id} added {banner_id} to daily queue. This banner date is {date_for_banner}")

@@ -8,6 +8,11 @@ from PIL import Image, ImageColor, ImageChops
 import config
 from application import get_db
 
+def get_layers_from_web(banner_id):
+    banner_data = get_mock_banner_data(banner_id)
+    if banner_data is None:
+        return None
+    return banner_data['mlayers']
 
 def get_image_data_url_by_id(banner_id, scale=10):
     banner_data = get_mock_banner_data(banner_id)

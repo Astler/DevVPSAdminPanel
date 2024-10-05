@@ -1,27 +1,39 @@
 import json
-import time
 from typing import Dict
 
 from flask import Response
+from flask_sqlalchemy.pagination import Pagination
 
 from application import app_sqlite_db
 from application.base_response import BaseResponse
 from banners.data.actions.action_item import AdminActionModel, AdminAction
 from banners.data.admin_repository import admin_validation
 from banners.data.firebase.firestore_repository import get_shared_banner_ref
+from banners.data_old.banner_image_generator import get_layers_from_web
 from banners.types.deleted_banner import DeletedBannerModel, DeletedBannerModelEncoder
-from cat.utils.telegram_utils import send_telegram_msg_to_me
 from config import BE_PAGE_SIZE
 
 
-def get_deleted_banners(page=0):
-    return (
-        app_sqlite_db.session.query(DeletedBannerModel)
-        .order_by(DeletedBannerModel.date.desc())
-        .offset(page * BE_PAGE_SIZE)
-        .limit(BE_PAGE_SIZE)
-        .all()
+def total_deleted_banners():
+    return app_sqlite_db.session.query(DeletedBannerModel).count()
+
+
+def paginate_deleted_banners(page=1) -> Pagination:
+    pagination = app_sqlite_db.session.query(DeletedBannerModel).paginate(
+        page=page, per_page=BE_PAGE_SIZE, error_out=False
     )
+
+    for banner in pagination.items:
+        if banner.layers is None:
+            banner.layers = json.dumps(get_layers_from_web(banner.id), ensure_ascii=False,
+                                       cls=DeletedBannerModelEncoder)
+            app_sqlite_db.session.add(banner)
+
+    app_sqlite_db.session.commit()
+
+    pagination.items = [banner.to_ui_info() for banner in pagination.items]
+
+    return pagination
 
 
 def delete_banner(request, mock: bool = False) -> Response:

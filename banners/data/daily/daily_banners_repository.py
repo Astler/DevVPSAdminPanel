@@ -1,8 +1,8 @@
 import json
-import time
 from datetime import datetime, timedelta
 
 from flask import Response
+from flask_sqlalchemy.pagination import Pagination
 from sqlalchemy import func
 
 from application import app_sqlite_db
@@ -12,25 +12,27 @@ from banners.data.admin_repository import admin_validation
 from banners.data.daily.daily_banner_item import DailyBannerItem, DailyBannerItemEncoder
 from banners.data.daily.dialy_banner import DailyBanner
 from banners.data.firebase.firestore_repository import get_be_shared
+from banners.data_old.banner_image_generator import get_layers_from_web
 from cat.utils.telegram_utils import send_telegram_msg_to_me
 from config import BE_PAGE_SIZE
 
 
-def get_daily_banners(page=0) -> []:
-    banners = app_sqlite_db.session.query(DailyBannerItem).order_by(DailyBannerItem.date.desc())
+def paginate_daily_banners(page=1) -> Pagination:
+    pagination = app_sqlite_db.session.query(DailyBannerItem).paginate(
+        page=page, per_page=BE_PAGE_SIZE, error_out=False
+    )
 
-    selection = []
+    for banner in pagination.items:
+        if banner.layers is None:
+            banner.layers = json.dumps(get_layers_from_web(banner.banner_id), ensure_ascii=False,
+                              cls=DailyBannerItemEncoder)
+            app_sqlite_db.session.add(banner)
 
-    last_item_index = (page + 1) * BE_PAGE_SIZE
-    first_item_index = page * BE_PAGE_SIZE
+    app_sqlite_db.session.commit()
 
-    if banners.count() < last_item_index:
-        last_item_index = banners.count()
+    pagination.items = [banner.to_ui_info() for banner in pagination.items]
 
-    for banner in banners[first_item_index:last_item_index]:
-        selection.append(banner)
-
-    return selection
+    return pagination
 
 
 def generate_daily_banners_response(request=None) -> str:
@@ -41,7 +43,7 @@ def generate_daily_banners_response(request=None) -> str:
     else:
         page = int(request_parameters["page"])
 
-    banners = get_daily_banners(page)
+    banners = paginate_daily_banners(page).items
 
     return str(json.dumps(banners, ensure_ascii=False, cls=DailyBannerItemEncoder)).replace("\'", "\"")
 
@@ -95,7 +97,7 @@ def add_to_daily(request) -> Response:
     return BaseResponse(True).to_response()
 
 
-def get_daily_banner(request_parameters=None) -> DailyBanner:
+def get_daily_banner(request_parameters=None) -> DailyBanner | None:
     if request_parameters is None:
         request_parameters = {}
     if not request_parameters.__contains__("date"):

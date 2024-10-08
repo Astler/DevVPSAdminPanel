@@ -54,6 +54,6 @@ class AdminActionModel(app_sqlite_db.Model):
             'admin': self.admin,
             'info': self.action_data,
             'translated_action': str(AdminAction.get_action_by_value(self.action).name),
-            'date': datetime.fromtimestamp(self.date / 1000).strftime('%Y-%m-%d %H:%M:%S'),
+            'date': datetime.fromtimestamp(self.date).strftime('%Y-%m-%d %H:%M:%S'),
             'image_url': get_image_data_url(banner.layers) if banner.layers else None
         }

@@ -18,7 +18,7 @@ from config import BE_PAGE_SIZE
 
 
 def paginate_daily_banners(page=1) -> Pagination:
-    pagination = app_sqlite_db.session.query(DailyBannerItem).paginate(
+    pagination = app_sqlite_db.session.query(DailyBannerItem).order_by(DailyBannerItem.date.desc()).paginate(
         page=page, per_page=BE_PAGE_SIZE, error_out=False
     )
 

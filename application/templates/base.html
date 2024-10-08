@@ -207,17 +207,63 @@
             font-size: 24px;
         }
 
-        /* ... (keep the rest of your existing styles) ... */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 16px;
+            height: 64px;
+            background-color: var(--md-sys-color-surface-variant);
+        }
+
+        .toolbar h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--md-sys-color-on-surface-variant);
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .toolbar-button {
+            background: none;
+            border: none;
+            color: var(--md-sys-color-on-surface-variant);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        .toolbar-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .toolbar-button .material-icons {
+            font-size: 24px;
+        }
 
     </style>
 </head>
 <body>
 <header class="toolbar">
+    {% if not is_root_page %}
+        <button class="toolbar-button" onclick="history.back()" title="Go Back">
+            <span class="material-icons">arrow_back</span>
+        </button>
+    {% else %}
+        <div style="width: 48px;"></div>
+    {% endif %}
     <h1>Press F Admin Panel</h1>
     {% if current_user.is_authenticated %}
-        <button class="signout-button" onclick="window.location.href='{{ url_for('auth.logout') }}'" title="Sign Out">
+        <button class="toolbar-button" onclick="window.location.href='{{ url_for('auth.logout') }}'" title="Sign Out">
             <span class="material-icons">logout</span>
         </button>
+    {% else %}
+        <div style="width: 48px;"></div>
     {% endif %}
 </header>
 <main class="main-content">

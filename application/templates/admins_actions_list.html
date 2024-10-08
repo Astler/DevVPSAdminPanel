@@ -60,26 +60,36 @@
     </style>
 
     <div class="daily-banners-container">
-        <h1>Daily Banners List</h1>
+        <h1>Admins Actions</h1>
         <table class="daily-banners-table">
             <thead>
             <tr>
-                <th>Date</th>
-                <th>Banner ID</th>
+                <th>Admin</th>
+                <th>Action</th>
                 <th>Preview</th>
+                <th>Date</th>
+                <th>Info</th>
             </tr>
             </thead>
             <tbody>
             {% for banner in pagination.items %}
                 <tr>
-                    <td>{{ banner.date }}</td>
-                    <td>{{ banner.banner_id }}</td>
+                    <td>{{ banner.admin }}</td>
+                    <td>{{ banner.translated_action }}</td>
                     <td>
                         {% if banner.image_url %}
                             <img src="{{ banner.image_url }}" alt="Banner Preview" class="banner-preview">
                         {% else %}
                             No preview available
                         {% endif %}
+                    </td>
+                    <td>{{ banner.date }}</td>
+                    <td>
+                        <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple"
+                                onclick="alert('{{ banner.info }}')">
+                            <span class="mdc-button__ripple"></span>
+                            <a class="mdc-button__label" href="#">Info</a>
+                        </button>
                     </td>
                 </tr>
             {% endfor %}
@@ -89,24 +99,27 @@
         <nav aria-label="Page navigation">
             <div class="pagination">
                 {% if pagination.has_prev %}
-                <a class="page-link" href="{{ url_for('daily_banners.daily_banners_list', page=pagination.prev_num) }}">Previous</a>
+                    <a class="page-link"
+                       href="{{ url_for('admins_banners.daily_banners_list', page=pagination.prev_num) }}">Previous</a>
                 {% else %}
                 {% endif %}
 
                 {% for page_num in pagination.iter_pages() %}
-                {% if page_num %}
-                {% if page_num != pagination.page %}
-                <a class="page-link" href="{{ url_for('daily_banners.daily_banners_list', page=page_num) }}">{{ page_num }}</a>
-                {% else %}
-                <span class="page-link">{{ page_num }}</span>
-                {% endif %}
-                {% else %}
-                <span class="page-link">...</span>
-                {% endif %}
+                    {% if page_num %}
+                        {% if page_num != pagination.page %}
+                            <a class="page-link"
+                               href="{{ url_for('admins_banners.daily_banners_list', page=page_num) }}">{{ page_num }}</a>
+                        {% else %}
+                            <span class="page-link">{{ page_num }}</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="page-link">...</span>
+                    {% endif %}
                 {% endfor %}
 
                 {% if pagination.has_next %}
-                <a class="page-link" href="{{ url_for('daily_banners.daily_banners_list', page=pagination.next_num) }}">Next</a>
+                    <a class="page-link"
+                       href="{{ url_for('admins_banners.daily_banners_list', page=pagination.next_num) }}">Next</a>
                 {% else %}
                 {% endif %}
             </div>

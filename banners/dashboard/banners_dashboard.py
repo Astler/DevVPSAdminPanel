@@ -4,7 +4,7 @@ from flask_login import login_required
 from admin.data.flask_login import check_is_admin_or_exit
 from admin.data.project_ids import ProjectId
 from banners.api.v2.common.banners_commands import get_daily_banner
-from banners.data.actions.actions_repository import get_all_actions
+from banners.data.actions.actions_repository import paginate_actions
 from banners.data.mapping.banners_mapping import get_last_mapping_update, count_mapped_banners
 from banners.data.messed_validator.messed_banners import messed_banners_info, find_messed_banners
 from banners.data_old.banner_image_generator import get_image_data_url_by_id
@@ -35,7 +35,7 @@ def banners_dashboard():
         messed_banners_update_time=messed.formatted_time() if messed is not None else "-- -- --",
         last_mapping_time=get_last_mapping_update(),
         total_banners=count_mapped_banners(),
-        admin_logs=get_all_actions(),
+        admin_logs=paginate_actions(1).items,
         admins_count=count_admins()
     )
 

@@ -3,6 +3,8 @@ from datetime import datetime
 from enum import Enum
 from json import JSONEncoder
 
+from banners.data.firebase.banner_firebase_item import BannerFirebaseItem
+from banners.data_old.banner_image_generator import get_image_data_url
 from core.dependencies import app_sqlite_db
 
 
@@ -43,3 +45,15 @@ class AdminActionModel(app_sqlite_db.Model):
             action=int(action),
             date=int(datetime.now().timestamp())
         )
+
+
+    def to_ui_info(self):
+        banner = BannerFirebaseItem.from_json(self.action_data)
+
+        return {
+            'admin': self.admin,
+            'info': self.action_data,
+            'translated_action': str(AdminAction.get_action_by_value(self.action).name),
+            'date': datetime.fromtimestamp(self.date / 1000).strftime('%Y-%m-%d %H:%M:%S'),
+            'image_url': get_image_data_url(banner.layers) if banner.layers else None
+        }

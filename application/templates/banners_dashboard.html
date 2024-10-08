@@ -156,42 +156,48 @@
                 </button>
                 <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
                     <span class="mdc-button__ripple"></span>
-                    <a class="mdc-button__label" href="{{ url_for('deleted_banners.deleted_banners_list') }}">Deleted</a>
+                    <a class="mdc-button__label"
+                       href="{{ url_for('deleted_banners.deleted_banners_list') }}">Deleted</a>
                 </button>
-{#                {% for n in range(4, 10) %}#}
-{#                    <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">#}
-{#                        <span class="mdc-button__ripple"></span>#}
-{#                        <span class="mdc-button__label">Action {{ n }}</span>#}
-{#                    </button>#}
-{#                {% endfor %}#}
+                <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
+                    <span class="mdc-button__ripple"></span>
+                    <a class="mdc-button__label" href="{{ url_for('admins_banners.admins_actions_list') }}">Admins
+                        Actions</a>
+                </button>
+                {#                {% for n in range(4, 10) %}#}
+                {#                    <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">#}
+                {#                        <span class="mdc-button__ripple"></span>#}
+                {#                        <span class="mdc-button__label">Action {{ n }}</span>#}
+                {#                    </button>#}
+                {#                {% endfor %}#}
             </div>
         </div>
 
         <div class="card logs">
-            <h2>Admin Actions Log</h2>
+            <h2>Last Admin Actions Log</h2>
             <table>
                 <thead>
                 <tr>
                     <th>Admin</th>
                     <th>Action</th>
                     <th>Banner</th>
-                    <th>Info</th>
                     <th>Date</th>
                 </tr>
                 </thead>
                 <tbody>
-                {% for log in admin_logs %}
+
+                {% for banner in admin_logs %}
                     <tr>
-                        <td>{{ log.admin_id }}</td>
-                        <td>{{ log.translated_action }}</td>
+                        <td>{{ banner.admin }}</td>
+                        <td>{{ banner.translated_action }}</td>
                         <td>
-                            {% if log.banner_url %}
-                                <img src="{{ log.banner_url }}" alt="Banner Preview" class="banner-preview"/>
+                            {% if banner.image_url %}
+                                <img src="{{ banner.image_url }}" alt="Banner Preview" class="banner-preview">
+                            {% else %}
+                                No preview available
                             {% endif %}
                         </td>
-                        <td></td>
-                        {#                        <td>{{ log.action_info }}</td>#}
-                        <td>{{ log.date }}</td>
+                        <td>{{ banner.date }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

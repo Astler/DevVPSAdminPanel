@@ -65,6 +65,9 @@ def create_app():
     from banners.dashboard.deleted_banners_list import deleted_banners_blueprint
     app.register_blueprint(deleted_banners_blueprint)
 
+    from banners.dashboard.admins_actions_list import admins_blueprint
+    app.register_blueprint(admins_blueprint)
+
     from banners.dashboard.daily_banners_list import daily_banners_blueprint
     app.register_blueprint(daily_banners_blueprint)
 

@@ -1,22 +1,15 @@
+from flask_sqlalchemy.pagination import Pagination
+
+from banners.data.actions.action_item import AdminActionModel
+from config import BE_PAGE_SIZE
 from core.dependencies import app_sqlite_db
-from banners.data.actions.action_item import AdminActionModel, AdminAction
-from banners.data.firebase.banner_firebase_item import BannerFirebaseItem
-from banners.data_old.banner_image_generator import get_image_data_url
 
 
-def get_all_actions() -> []:
-    actions = app_sqlite_db.session.query(AdminActionModel).order_by(AdminActionModel.record_id.desc()).all()
+def paginate_actions(page=1) -> Pagination:
+    pagination = app_sqlite_db.session.query(AdminActionModel).order_by(AdminActionModel.record_id.desc()).paginate(
+        page=page, per_page=BE_PAGE_SIZE, error_out=False
+    )
 
-    result = []
+    pagination.items = [action.to_ui_info() for action in pagination.items]
 
-    for action in actions:
-        banner = BannerFirebaseItem.from_json(action.action_data)
-
-        if banner is not None:
-            action.banner_url = get_image_data_url(banner.layers, 1)
-
-        action.translated_action = str(AdminAction.get_action_by_value(action.action).name)
-
-        result.append(action)
-
-    return result
+    return pagination

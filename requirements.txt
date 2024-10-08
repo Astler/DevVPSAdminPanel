@@ -62,3 +62,4 @@ zipp==3.19.1
 pillow==10.1.0
 Flask-Migrate==4.0.7
 Flask-APScheduler==1.13.1
+setuptools==75.1.0

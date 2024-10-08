@@ -1,4 +1,4 @@
-from application import get_db
+from core.firebase import get_db
 from cat.utils.telegram_utils import send_telegram_msg_to_me
 from config import MC_PROJECT_ID
 

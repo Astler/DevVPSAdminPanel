@@ -1,30 +1,33 @@
-import firebase_admin
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from firebase_admin import credentials, firestore
-from flask_login import LoginManager, UserMixin
-from flask_migrate import Migrate
+from datetime import datetime
 
-from cat.utils.github_utils import load_firebase_certificate
+from flask import Flask, current_app
+from flask_apscheduler import APScheduler
+from flask_login import LoginManager
+
+from banners.scheduled.banners_editor_scheduled import check_for_daily_banner
 from cat.utils.telegram_utils import send_telegram_msg_to_me
-from config import PROJECT_ID, CERT_PATH, MC_PROJECT_ID, MC_CERT_PATH
+from core.data.user_data import User
+from core.dependencies import app_sqlite_db, migrate
+from core.firebase import firebase_connect_multiple
 
 send_telegram_msg_to_me("Запуск приложения!")
 
-app_sqlite_db = SQLAlchemy()
-migrate = Migrate()
 app = None
 
 import os
 
 file_path = os.path.abspath(os.getcwd()) + "/app/instance/db.sqlite"
 
+def scheduled_task():
+    check_for_daily_banner()
+    current_app.logger.info(f"Performing scheduled task at {datetime.now()}")
 
-class User(UserMixin, app_sqlite_db.Model):
-    id = app_sqlite_db.Column(app_sqlite_db.Integer, primary_key=True)
-    email = app_sqlite_db.Column(app_sqlite_db.String(100), unique=True)
-    password = app_sqlite_db.Column(app_sqlite_db.String(100))
-    name = app_sqlite_db.Column(app_sqlite_db.String(1000))
+def run_scheduled_tasks():
+    print("Running all scheduled tasks on start...")
+    scheduled_task()
+    # Add any other scheduled tasks here
+    print("Finished running scheduled tasks")
+
 
 
 def create_app():
@@ -78,24 +81,13 @@ def create_app():
 
     firebase_connect_multiple()
 
+    scheduler = APScheduler()
+    scheduler.init_app(app)
+    scheduler.start()
+
+    scheduler.add_job(id='daily_task', func=scheduled_task, trigger='cron', hour=0, minute=0)
+
+    with app.app_context():
+        run_scheduled_tasks()
+
     return app
-
-
-def firebase_connect_multiple():
-    send_telegram_msg_to_me("Подключаюсь к нескольким проектам Firebase!")
-
-    admin_cred = credentials.Certificate(load_firebase_certificate(CERT_PATH))
-    first_app = firebase_admin.initialize_app(admin_cred, {
-        'projectId': PROJECT_ID,
-    }, name=PROJECT_ID)
-
-    mc_cred = credentials.Certificate(load_firebase_certificate(MC_CERT_PATH))
-    second_app = firebase_admin.initialize_app(mc_cred, {
-        'projectId': MC_PROJECT_ID,
-    }, name=MC_PROJECT_ID)
-
-    return first_app, second_app
-
-
-def get_db(app_name):
-    return firestore.client(app=firebase_admin.get_app(name=app_name))

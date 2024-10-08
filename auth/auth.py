@@ -1,7 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, logout_user, current_user
-from application import app_sqlite_db, User
+
+from application import User
+from core.dependencies import app_sqlite_db
 from functools import wraps
 import re
 

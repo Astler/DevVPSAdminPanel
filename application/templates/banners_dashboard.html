@@ -156,18 +156,14 @@
                 </button>
                 <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
                     <span class="mdc-button__ripple"></span>
-                    <a class="mdc-button__label" href="{{ url_for('daily_banners.daily_banners_list') }}">Populate Banners For A Week</a>
-                </button>
-                <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
-                    <span class="mdc-button__ripple"></span>
                     <a class="mdc-button__label" href="{{ url_for('deleted_banners.deleted_banners_list') }}">Deleted</a>
                 </button>
-                {% for n in range(4, 10) %}
-                    <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
-                        <span class="mdc-button__ripple"></span>
-                        <span class="mdc-button__label">Action {{ n }}</span>
-                    </button>
-                {% endfor %}
+{#                {% for n in range(4, 10) %}#}
+{#                    <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">#}
+{#                        <span class="mdc-button__ripple"></span>#}
+{#                        <span class="mdc-button__label">Action {{ n }}</span>#}
+{#                    </button>#}
+{#                {% endfor %}#}
             </div>
         </div>
 

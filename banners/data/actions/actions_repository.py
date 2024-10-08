@@ -1,4 +1,4 @@
-from application import app_sqlite_db
+from core.dependencies import app_sqlite_db
 from banners.data.actions.action_item import AdminActionModel, AdminAction
 from banners.data.firebase.banner_firebase_item import BannerFirebaseItem
 from banners.data_old.banner_image_generator import get_image_data_url

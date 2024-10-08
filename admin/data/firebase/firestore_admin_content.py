@@ -1,7 +1,7 @@
 import config
 from admin.data.project_fields import ProjectsFields
 from admin.data.project_ids import ProjectId
-from application import get_db
+from core.firebase import get_db
 
 
 def get_admins_by_project_id(project_id: ProjectId) -> []:

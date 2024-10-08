@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum
 from json import JSONEncoder
 
-from application import app_sqlite_db
+from core.dependencies import app_sqlite_db
 
 
 class AdminAction(Enum):

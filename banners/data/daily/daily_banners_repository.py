@@ -5,7 +5,7 @@ from flask import Response
 from flask_sqlalchemy.pagination import Pagination
 from sqlalchemy import func
 
-from application import app_sqlite_db
+from core.dependencies import app_sqlite_db
 from application.base_response import BaseResponse
 from banners.data.actions.action_item import AdminActionModel, AdminAction
 from banners.data.admin_repository import admin_validation

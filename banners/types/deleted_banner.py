@@ -3,7 +3,7 @@ from datetime import datetime
 from json import JSONEncoder
 
 from admin.data.project_fields import ProjectsFields
-from application import app_sqlite_db
+from core.dependencies import app_sqlite_db
 from banners.data_old.banner_image_generator import get_image_data_url
 
 

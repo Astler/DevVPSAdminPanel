@@ -2,13 +2,13 @@ import json
 from datetime import datetime
 from json import JSONEncoder
 
-from application import app_sqlite_db
+from core.dependencies import app_sqlite_db
 from banners.data_old.banner_image_generator import get_image_data_url
 
 
 class DailyBannerItemEncoder(JSONEncoder):
     def default(self, obj):
-        return {"banner_id": obj.banner_id, "date": obj.date, "layers": obj.layers}
+        return {"banner_id": obj.banner_id, "date": obj.date, "layers": obj.layers, "count": obj.count}
 
 
 class DailyBannerItem(app_sqlite_db.Model):
@@ -16,6 +16,7 @@ class DailyBannerItem(app_sqlite_db.Model):
     banner_id = app_sqlite_db.Column(app_sqlite_db.String(100), unique=True)
     date = app_sqlite_db.Column(app_sqlite_db.BigInteger)
     layers = app_sqlite_db.Column(app_sqlite_db.String())
+    count = app_sqlite_db.Column(app_sqlite_db.Integer)
 
     def to_ui_info(self):
         return {

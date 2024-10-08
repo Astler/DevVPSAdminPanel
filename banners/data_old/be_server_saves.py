@@ -3,11 +3,12 @@ import time
 from datetime import datetime
 
 import config
-from application import app_sqlite_db, get_db
+from core.dependencies import app_sqlite_db
 from banners.data.daily.daily_banner_item import DailyBannerItem
 from banners.types.be_saves import BannersEditorSaves
 from banners.types.be_settings import BannersEditorSettings
 from cat.utils.ios_utils import open_internal_file
+from core.firebase import get_db
 
 __local_cached_saves: BannersEditorSaves = None
 

@@ -6,7 +6,8 @@ import os
 from PIL import Image, ImageColor, ImageChops
 
 import config
-from application import get_db
+from core.firebase import get_db
+
 
 def get_layers_from_web(banner_id):
     banner_data = get_mock_banner_data(banner_id)

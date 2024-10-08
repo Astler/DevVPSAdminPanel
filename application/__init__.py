@@ -19,7 +19,7 @@ import os
 file_path = os.path.abspath(os.getcwd()) + "/app/instance/db.sqlite"
 
 def scheduled_task():
-    #check_for_daily_banner()
+    check_for_daily_banner()
     current_app.logger.info(f"Performing scheduled task at {datetime.now()}")
 
 def run_scheduled_tasks():

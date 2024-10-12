@@ -12,11 +12,6 @@ banners_api_blueprint = Blueprint('banners_api', __name__)
 def get_paged_banners():
     return generate_daily_banners_response(request)
 
-
-@banners_api_blueprint.route('/be_daily_banners_list', methods=['GET', 'POST'])
-def get_paged_banners_old():
-    return get_paged_banners()
-
 @banners_api_blueprint.route('/be/api/daily_banner', methods=['GET', 'POST'])
 def get_daily_banner_json():
     request_parameters = request.args.to_dict()
@@ -29,24 +24,14 @@ def get_daily_banner_json():
     return str(banner.to_json()).replace("\'", "\"")
 
 
-@banners_api_blueprint.route('/be/daily_banner', methods=['GET', 'POST'])
-def get_daily_banner_json_old():
-    return get_daily_banner_json()
-
-
 @banners_api_blueprint.route('/be/api/settings', methods=['GET'])
 def get_settings():
     return get_banners_settings("v2")
 
-
-@banners_api_blueprint.route('/be/settings', methods=['GET'])
-def get_settings_old():
-    return get_banners_settings("v1")
-
-
 #
 # new commands
 #
+
 
 @banners_api_blueprint.route('/be/mapping', methods=['GET'])
 def get_banners_mapping():
@@ -57,6 +42,20 @@ def get_banners_mapping():
 # old and legacy
 # todo remove later
 #
+
+@banners_api_blueprint.route('/be/daily_banner', methods=['GET', 'POST'])
+def get_daily_banner_json_old():
+    return get_daily_banner_json()
+
+@banners_api_blueprint.route('/be_daily_banners_list', methods=['GET', 'POST'])
+def get_paged_banners_old():
+    return get_paged_banners()
+
+
+@banners_api_blueprint.route('/be/settings', methods=['GET'])
+def get_settings_old():
+    return get_banners_settings("v1")
+
 
 @banners_api_blueprint.route('/be_map', methods=['GET'])
 def get_old_banners_mapping():

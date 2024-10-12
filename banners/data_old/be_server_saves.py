@@ -45,7 +45,7 @@ def get_banners_settings(version: str) -> str:
     if version == "v1":
         settings.map_update_time = str(saves.last_mapping_time)
     else:
-        settings.map_update_time = saves.last_mapping_time
+        settings.last_mapping_time = saves.last_mapping_time
 
     settings.daily_banner_id = banner_for_date.banner_id
 

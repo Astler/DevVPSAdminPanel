@@ -36,12 +36,12 @@ def get_daily_banner_json_old():
 
 @banners_api_blueprint.route('/be/api/settings', methods=['GET'])
 def get_settings():
-    return get_banners_settings()
+    return get_banners_settings("v2")
 
 
 @banners_api_blueprint.route('/be/settings', methods=['GET'])
 def get_settings_old():
-    return get_settings()
+    return get_banners_settings("v1")
 
 
 #

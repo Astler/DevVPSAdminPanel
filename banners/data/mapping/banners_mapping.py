@@ -1,6 +1,7 @@
 import json
 import os
 import time
+from datetime import datetime
 
 from banners.data.firebase.firestore_repository import get_be_shared
 from banners.data.firebase.banner_firebase_item import BannerFirebaseItem
@@ -16,14 +17,14 @@ from config import BE_BANNERS_MAP, BE_MAP_UPDATE_HOURS
 # Update time
 #
 
-def get_last_mapping_update() -> str:
+def get_last_mapping_update() -> int:
     saves = read_banners_saves()
-    return saves.map_update_time
+    return saves.last_mapping_time
 
 
 def save_mapping_time():
     saves = read_banners_saves()
-    saves.map_update_time = str(time.time())
+    saves.last_mapping_time = int(datetime.now().timestamp())
     write_banners_saves(saves)
 
 

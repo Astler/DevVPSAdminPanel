@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template, current_app
+from datetime import datetime
+
+from flask import Blueprint, render_template, current_app, url_for
 from flask_login import login_required
 
 from admin.data.flask_login import check_is_admin_or_exit
@@ -23,20 +25,33 @@ def banners_dashboard():
     if not daily_banner_data:
         return render_template('banners_dashboard.html', banner_data=None)
 
-    messed = messed_banners_info()
+    buttons = [
+        {
+            'label': 'All Daily Banners',
+            'url': url_for('daily_banners.daily_banners_list'),
+        },
+        {
+            'label': 'Deleted',
+            'url': url_for('deleted_banners.deleted_banners_list'),
+        },
+        {
+            'label': 'Admins Actions',
+            'url': url_for('admins_banners.admins_actions_list'),
+        },
+    ]
+
+    last_mapping_time = datetime.fromtimestamp(get_last_mapping_update() / 1000).strftime('%Y-%m-%d %H:%M:%S')
 
     from banners.data.admin_repository import count_admins
     return render_template(
         'banners_dashboard.html',
-        sign_up_enabled=current_app.config['SIGN_UP_ENABLED'],
         daily_banner_url=get_image_data_url_by_id(daily_banner_data.daily_banner_id),
         daily_banner_id=daily_banner_data.daily_banner_id,
-        messed_banners=len(messed.banners) if messed is not None else "No messed banners data_old found!",
-        messed_banners_update_time=messed.formatted_time() if messed is not None else "-- -- --",
-        last_mapping_time=get_last_mapping_update(),
+        last_mapping_time=last_mapping_time,
         total_banners=count_mapped_banners(),
         admin_logs=paginate_actions(1).items,
-        admins_count=count_admins()
+        admins_count=count_admins(),
+        buttons=buttons
     )
 
 

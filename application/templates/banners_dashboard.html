@@ -2,95 +2,95 @@
 
 {% block content %}
     <style>
-        :root {
-            /* Night-friendly dark theme colors */
-            --md-sys-color-background: #121620;
-            --md-sys-color-surface: #1E2430;
-            --md-sys-color-primary: #FF9800;
-            --md-sys-color-on-primary: #1E2430;
-            --md-sys-color-primary-container: #FF9800;
-            --md-sys-color-on-primary-container: #1E2430;
-            --md-sys-color-secondary: #FFB74D;
-            --md-sys-color-on-secondary: #1E2430;
-            --md-sys-color-secondary-container: #2A3241;
-            --md-sys-color-on-secondary-container: #E0E0E0;
-            --md-sys-color-on-surface: #E0E0E0;
-            --md-sys-color-surface-variant: #2A3241;
-            --md-sys-color-on-surface-variant: #B0BEC5;
-            --md-sys-color-outline: #546E7A;
+        table th {
+            background-color: var(--md-sys-color-secondary-container);
+            color: var(--md-sys-color-on-secondary-container);
         }
 
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--md-sys-color-background);
-            color: var(--md-sys-color-on-surface);
-            margin: 0;
-            padding: 0;
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
         }
 
-        .dashboard-container {
+        .logs {
+            overflow-x: auto;
+        }
+
+        .banner-preview {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .daily-banner:nth-child(1) {
+            height: 100%;
+        }
+
+        .daily-banner:nth-child(2) {
+            height: 66%;
+        }
+
+        .daily-banner:nth-child(3) {
+            height: 33%;
+        }
+
+        .banner-card, .stats-card {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .image-container {
             display: flex;
-            flex-direction: column;
-            padding: 16px;
-            gap: 16px;
-            max-width: 1200px;
-            margin: 0 auto;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            height: 70%;
+            flex: 1;
+        }
+
+        .daily-banner {
+            display: flex;
+            cursor: pointer;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .daily-banner img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 8px;
         }
 
         .card {
             background-color: var(--md-sys-color-surface);
             border-radius: 16px;
             padding: 16px;
+            flex: 1;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
 
-        .mdc-button--raised {
-            background-color: var(--md-sys-color-primary);
-            color: var(--md-sys-color-on-primary);
-        }
+        {#new content#}
 
-        table th {
-            background-color: var(--md-sys-color-secondary-container);
-            color: var(--md-sys-color-on-secondary-container);
-        }
-
-        .data-section {
+        .root-container {
             display: flex;
             flex-direction: column;
             gap: 16px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 16px;
         }
 
-        @media (min-width: 768px) {
-            .dashboard-container {
-                flex-direction: row;
-                flex-wrap: wrap;
-            }
-
-            .card {
-                flex: 1 1 calc(50% - 16px);
-            }
-
-            .data-section {
-                flex-direction: row;
-            }
-
-            .logs {
-                flex-basis: 100%;
-            }
-        }
-
-        .daily-banner {
-            flex: 1;
-        }
-
-        .daily-banner img {
-            width: 25%;
-            height: auto;
-            border-radius: 8px;
-        }
-
-        .stats {
-            flex: 1;
+        .dashboard-container {
+            display: flex;
+            gap: 16px;
+            justify-content: space-between;
         }
 
         .actions-grid {
@@ -103,130 +103,124 @@
             width: 100%;
             height: 40px;
             border-radius: 20px;
-            text-transform: none;
-            font-weight: 500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-
-        .logs {
-            overflow-x: auto;
-        }
-
-        table {
+        .mdc-button__label {
+            color: inherit;
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+            height: 100%;
+            text-align: center;
         }
 
-        .banner-preview {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 4px;
+        .mdc-button--raised {
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+        }
+
+        @media (max-width: 700px) {
+            .dashboard-container {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .image-container {
+                height: 200px;
+            }
         }
     </style>
 
-    <div class="dashboard-container">
-        <div class="card data-section">
-            <div class="daily-banner">
-                <img width="50" height="150" src="{{ daily_banner_url }}" alt="Daily Banner"/>
-                <p style="font-size: 12px; color: var(--md-sys-color-on-surface-variant); text-align: center;">{{ daily_banner_id }}</p>
+    <div class="root-container">
+
+        <div class="dashboard-container">
+            <div class="card">
+                <div class="actions-grid">
+                    {% for button in buttons %}
+                        <a href="{{ button.url }}" class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
+                            <span class="mdc-button__label">{{ button.label }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
             </div>
-            <div class="stats">
+        </div>
+
+        <div class="dashboard-container">
+            <div class="card banner-card">
+                <h2>Daily banners</h2>
+                <div class="image-container">
+                    <div class="daily-banner" onclick="copyBannerId()">
+                        <img src="{{ daily_banner_url }}" alt="{{ daily_banner_id }}"/>
+                    </div>
+                    <div class="daily-banner" onclick="copyBannerId()">
+                        <img src="{{ daily_banner_url }}" alt="{{ daily_banner_id }}"/>
+                    </div>
+                    <div class="daily-banner" onclick="copyBannerId()">
+                        <img src="{{ daily_banner_url }}" alt="{{ daily_banner_id }}"/>
+                    </div>
+                </div>
+            </div>
+            <div class="card stats-card">
                 <h2>Statistics</h2>
                 <p>Admins Count: {{ admins_count }}</p>
-                <p>Total banners: {{ total_banners }}</p>
-                <p>{{ last_mapping_time }}</p>
-                <p>Messed Banners Count: {{ messed_banners }}</p>
-                <p>{{ messed_banners_update_time }}</p>
-                <p id="messedLoading">Loading..</p>
-                <button class="mdc-button mdc-button--raised" id="refreshBtn" data-mdc-auto-init="MDCRipple">
-                    <span class="mdc-button__ripple"></span>
-                    <span class="mdc-button__label">Refresh</span>
-                </button>
+                <p>Total banners: <b>{{ total_banners }}</b><br/>Last mapping: <b>{{ last_mapping_time }}</b></p>
             </div>
         </div>
 
-        <div class="card">
-            <div class="actions-grid">
-                <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
-                    <span class="mdc-button__ripple"></span>
-                    <a class="mdc-button__label" href="{{ url_for('daily_banners.daily_banners_list') }}">All
-                        Daily Banners</a>
-                </button>
-                <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
-                    <span class="mdc-button__ripple"></span>
-                    <a class="mdc-button__label"
-                       href="{{ url_for('deleted_banners.deleted_banners_list') }}">Deleted</a>
-                </button>
-                <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
-                    <span class="mdc-button__ripple"></span>
-                    <a class="mdc-button__label" href="{{ url_for('admins_banners.admins_actions_list') }}">Admins
-                        Actions</a>
-                </button>
-                {#                {% for n in range(4, 10) %}#}
-                {#                    <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">#}
-                {#                        <span class="mdc-button__ripple"></span>#}
-                {#                        <span class="mdc-button__label">Action {{ n }}</span>#}
-                {#                    </button>#}
-                {#                {% endfor %}#}
-            </div>
-        </div>
-
-        <div class="card logs">
-            <h2>Last Admin Actions Log</h2>
-            <table>
-                <thead>
-                <tr>
-                    <th>Admin</th>
-                    <th>Action</th>
-                    <th>Banner</th>
-                    <th>Date</th>
-                </tr>
-                </thead>
-                <tbody>
-
-                {% for banner in admin_logs %}
+        <div class="dashboard-container">
+            <div class="card logs">
+                <h2>Last Admin Actions Log</h2>
+                <table>
+                    <thead>
                     <tr>
-                        <td>{{ banner.admin }}</td>
-                        <td>{{ banner.translated_action }}</td>
-                        <td>
-                            {% if banner.image_url %}
-                                <img src="{{ banner.image_url }}" alt="Banner Preview" class="banner-preview">
-                            {% else %}
-                                No preview available
-                            {% endif %}
-                        </td>
-                        <td>{{ banner.date }}</td>
+                        <th>Admin</th>
+                        <th>Action</th>
+                        <th>Banner</th>
+                        <th>Date</th>
                     </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+
+                    {% for banner in admin_logs %}
+                        <tr>
+                            <td>{{ banner.admin }}</td>
+                            <td>{{ banner.translated_action }}</td>
+                            <td>
+                                {% if banner.image_url %}
+                                    <img src="{{ banner.image_url }}" alt="Banner Preview" class="banner-preview">
+                                {% else %}
+                                    No preview available
+                                {% endif %}
+                            </td>
+                            <td>{{ banner.date }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
-        const loading = document.getElementById('messedLoading');
-        loading.style.display = 'none';
-
-        document.getElementById('refreshBtn').addEventListener('click', function () {
-            const refreshBtn = document.getElementById('refreshBtn');
-            refreshBtn.disabled = true;
-            loading.style.display = 'inline-block';
-
-            fetch('/be/find_messed_banners', {
-                method: 'GET',
-            }).then(function (response) {
-                return response.json();
-            }).then(function (data) {
-                console.log(data);
-                window.location.reload();
-            }).finally(function () {
-                loading.style.display = 'none';
-                refreshBtn.disabled = false;
+        function copyBannerId() {
+            var bannerId = "{{ daily_banner_id }}";
+            alert('Banner ID copied to clipboard');
+            navigator.clipboard.writeText(bannerId).then(function () {
+                var copyMessage = document.getElementById('copyMessage');
+                copyMessage.style.display = 'block';
+                setTimeout(function () {
+                    copyMessage.style.display = 'none';
+                }, 2000);
+            }).catch(function (err) {
+                console.error('Failed to copy: ', err);
             });
-        });
-
-        mdc.autoInit();
+        }
     </script>
 {% endblock %}

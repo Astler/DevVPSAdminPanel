@@ -8,27 +8,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --md-sys-color-primary: #D0BCFF;
-            --md-sys-color-on-primary: #381E72;
-            --md-sys-color-primary-container: #4F378B;
-            --md-sys-color-on-primary-container: #EADDFF;
-            --md-sys-color-secondary: #CCC2DC;
-            --md-sys-color-on-secondary: #332D41;
-            --md-sys-color-secondary-container: #4A4458;
-            --md-sys-color-on-secondary-container: #E8DEF8;
-            --md-sys-color-surface: #1C1B1F;
-            --md-sys-color-on-surface: #E6E1E5;
-            --md-sys-color-surface-variant: #49454F;
-            --md-sys-color-on-surface-variant: #CAC4D0;
-            --md-sys-color-outline: #938F99;
-            --md-sys-color-error: #F2B8B5;
+            --md-sys-color-background: #121620;
+            --md-sys-color-surface: #1E2430;
+            --md-sys-color-primary: #FF9800;
+            --md-sys-color-on-primary: #1E2430;
+            --md-sys-color-primary-container: #FF9800;
+            --md-sys-color-on-primary-container: #1E2430;
+            --md-sys-color-secondary: #FFB74D;
+            --md-sys-color-on-secondary: #1E2430;
+            --md-sys-color-secondary-container: #2A3241;
+            --md-sys-color-on-secondary-container: #E0E0E0;
+            --md-sys-color-on-surface: #E0E0E0;
+            --md-sys-color-surface-variant: #2A3241;
+            --md-sys-color-on-surface-variant: #B0BEC5;
+            --md-sys-color-outline: #546E7A;
         }
 
         body {
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: var(--md-sys-color-surface);
+            background-color: var(--md-sys-color-background);
             color: var(--md-sys-color-on-surface);
             display: flex;
             flex-direction: column;
@@ -65,7 +65,7 @@
         }
 
         .content-wrapper {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -257,6 +257,12 @@
     {% else %}
         <div style="width: 48px;"></div>
     {% endif %}
+
+
+    <button class="toolbar-button" onclick="window.location.href='{{ url_for('main.profile') }}'" title="Go Home">
+        <span class="material-icons">home</span>
+    </button>
+
     <h1>Press F Admin Panel</h1>
     {% if current_user.is_authenticated %}
         <button class="toolbar-button" onclick="window.location.href='{{ url_for('auth.logout') }}'" title="Sign Out">

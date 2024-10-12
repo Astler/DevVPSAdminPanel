@@ -41,7 +41,8 @@ def get_banners_settings() -> str:
     allowed_emails = db.collection('admins').document('banners_editor').get().to_dict()
 
     settings.admins = allowed_emails.get('emails', [])
-    settings.map_update_time = saves.last_mapping_time
+    settings.map_update_time = str(saves.last_mapping_time)
+    settings.last_mapping_time = saves.last_mapping_time
     settings.daily_banner_id = banner_for_date.banner_id
 
     return str(settings.to_json()).replace("\'", "\"")

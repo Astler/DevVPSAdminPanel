@@ -18,9 +18,11 @@ import os
 
 file_path = os.path.abspath(os.getcwd()) + "/app/instance/db.sqlite"
 
+
 def scheduled_task():
     check_for_daily_banner()
     current_app.logger.info(f"Performing scheduled task at {datetime.now()}")
+
 
 def run_scheduled_tasks():
     print("Running all scheduled tasks on start...")
@@ -29,13 +31,19 @@ def run_scheduled_tasks():
     print("Finished running scheduled tasks")
 
 
-
 def create_app():
     global app
     app = Flask(__name__, instance_path='/instance')
 
     app.config['SECRET_KEY'] = 'secret-key-goes-here'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////instance/db.sqlite'
+
+    app.config['UPLOAD_FOLDER'] = 'uploads'
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+    app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
+
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        os.makedirs(app.config['UPLOAD_FOLDER'])
 
     app.config['SIGN_UP_ENABLED'] = True
 
@@ -70,6 +78,9 @@ def create_app():
 
     from banners.dashboard.daily_banners_list import daily_banners_blueprint
     app.register_blueprint(daily_banners_blueprint)
+
+    from tools.dashboard.tools_page import tools_blueprint
+    app.register_blueprint(tools_blueprint)
 
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'

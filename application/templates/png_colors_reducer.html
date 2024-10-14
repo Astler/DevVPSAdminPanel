@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <style>
+        table th {
+            background-color: var(--md-sys-color-secondary-container);
+            color: var(--md-sys-color-on-secondary-container);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .logs {
+            overflow-x: auto;
+        }
+
+        .banner-preview {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .daily-banner:nth-child(1) {
+            height: 100%;
+        }
+
+        .daily-banner:nth-child(2) {
+            height: 66%;
+        }
+
+        .daily-banner:nth-child(3) {
+            height: 33%;
+        }
+
+        .banner-card, .stats-card {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .image-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            height: 70%;
+            flex: 1;
+        }
+
+        .daily-banner {
+            display: flex;
+            cursor: pointer;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .daily-banner img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .card {
+            background-color: var(--md-sys-color-surface);
+            border-radius: 16px;
+            padding: 16px;
+            flex: 1;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        {#new content#}
+
+        .root-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .dashboard-container {
+            display: flex;
+            gap: 16px;
+            justify-content: space-between;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+        }
+
+        .mdc-button {
+            width: 100%;
+            height: 40px;
+            border-radius: 20px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mdc-button__label {
+            color: inherit;
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+        }
+
+        .mdc-button--raised {
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+        }
+
+        .image-upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .image-preview {
+            max-width: 300px;
+            max-height: 300px;
+            margin-top: 20px;
+        }
+
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+
+        .debug-info {
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin-top: 20px;
+            font-family: monospace;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .image-pair {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+        }
+
+        @media (max-width: 700px) {
+            .dashboard-container {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .image-container {
+                height: 200px;
+            }
+        }
+    </style>
+
+    <div class="root-container">
+        <div class="card">
+            <h2>Color Reducer</h2>
+            <form id="colorReducerForm" class="image-upload-form">
+                <input type="file" name="images" accept="image/*" multiple required>
+                <input type="number" name="num_colors" min="2" max="256" value="16" required>
+                <button type="submit" class="mdc-button mdc-button--raised">
+                    <span class="mdc-button__label">Reduce Colors</span>
+                </button>
+            </form>
+            <button id="downloadBtn" class="mdc-button mdc-button--raised" style="display: none;">
+                <span class="mdc-button__label">Download Compressed Images</span>
+            </button>
+            <button id="clearBtn" class="mdc-button mdc-button--raised" style="display: none;">
+                <span class="mdc-button__label">Clear Compressed Images</span>
+            </button>
+            <div id="imageGrid" class="image-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('colorReducerForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            fetch("{{ url_for('tools_blueprint.colors_reducer') }}", {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Error:', data.error);
+                        return;
+                    }
+                    const imageGrid = document.getElementById('imageGrid');
+                    imageGrid.innerHTML = '';
+                    data.images.forEach(image => {
+                        const imagePair = document.createElement('div');
+                        imagePair.className = 'image-pair';
+                        imagePair.innerHTML = `
+                        <img src="${image.original}" alt="Original" class="image-preview">
+                        <img src="${image.reduced}" alt="Reduced" class="image-preview">
+                    `;
+                        imageGrid.appendChild(imagePair);
+                    });
+                    document.getElementById('downloadBtn').style.display = 'inline-block';
+                    document.getElementById('clearBtn').style.display = 'inline-block';
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', function () {
+            window.location.href = "{{ url_for('tools_blueprint.download_compressed') }}";
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', function () {
+            fetch("{{ url_for('tools_blueprint.clear_compressed') }}", {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const imageGrid = document.getElementById('imageGrid');
+                        imageGrid.innerHTML = '';
+                        this.style.display = 'none';
+                        document.getElementById('downloadBtn').style.display = 'none';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+{% endblock %}

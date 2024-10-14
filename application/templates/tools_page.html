@@ -99,6 +99,32 @@
             gap: 16px;
         }
 
+        .mdc-button {
+            width: 100%;
+            height: 40px;
+            border-radius: 20px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mdc-button__label {
+            color: inherit;
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+        }
+
+        .mdc-button--raised {
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+        }
+
         @media (max-width: 700px) {
             .dashboard-container {
                 display: flex;
@@ -125,76 +151,5 @@
                 </div>
             </div>
         </div>
-
-        <div class="dashboard-container">
-            <div class="card banner-card">
-                <h2>Daily banners</h2>
-                <div class="image-container">
-                    <div class="daily-banner" onclick="copyBannerId()">
-                        <img src="{{ daily_banner_url }}" alt="{{ daily_banner_id }}"/>
-                    </div>
-                    <div class="daily-banner" onclick="copyBannerId()">
-                        <img src="{{ daily_banner_url }}" alt="{{ daily_banner_id }}"/>
-                    </div>
-                    <div class="daily-banner" onclick="copyBannerId()">
-                        <img src="{{ daily_banner_url }}" alt="{{ daily_banner_id }}"/>
-                    </div>
-                </div>
-            </div>
-            <div class="card stats-card">
-                <h2>Statistics</h2>
-                <p>Admins Count: {{ admins_count }}</p>
-                <p>Total banners: <b>{{ total_banners }}</b><br/>Last mapping: <b>{{ last_mapping_time }}</b></p>
-            </div>
-        </div>
-
-        <div class="dashboard-container">
-            <div class="card logs">
-                <h2>Last Admin Actions Log</h2>
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Admin</th>
-                        <th>Action</th>
-                        <th>Banner</th>
-                        <th>Date</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-
-                    {% for banner in admin_logs %}
-                        <tr>
-                            <td>{{ banner.admin }}</td>
-                            <td>{{ banner.translated_action }}</td>
-                            <td>
-                                {% if banner.image_url %}
-                                    <img src="{{ banner.image_url }}" alt="Banner Preview" class="banner-preview">
-                                {% else %}
-                                    No preview available
-                                {% endif %}
-                            </td>
-                            <td>{{ banner.date }}</td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
-
-    <script>
-        function copyBannerId() {
-            var bannerId = "{{ daily_banner_id }}";
-            alert('Banner ID copied to clipboard');
-            navigator.clipboard.writeText(bannerId).then(function () {
-                var copyMessage = document.getElementById('copyMessage');
-                copyMessage.style.display = 'block';
-                setTimeout(function () {
-                    copyMessage.style.display = 'none';
-                }, 2000);
-            }).catch(function (err) {
-                console.error('Failed to copy: ', err);
-            });
-        }
-    </script>
 {% endblock %}

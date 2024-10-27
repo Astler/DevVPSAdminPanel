@@ -2,8 +2,8 @@ import uuid
 from datetime import datetime
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required
-from admin.data.flask_login import check_is_admin_or_exit
-from admin.data.project_ids import ProjectId
+from application.data.flask_login import check_is_admin_or_exit
+from application.data.project_ids import ProjectId
 from application.projects_dashboard.data.project_item import ProjectItem
 from core.dependencies import app_sqlite_db
 

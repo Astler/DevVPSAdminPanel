@@ -88,7 +88,7 @@ def create_app():
     from banners.dashboard.daily_banners_list import daily_banners_blueprint
     app.register_blueprint(daily_banners_blueprint)
 
-    from tools.dashboard.tools_page import tools_blueprint
+    from application.tools.dashboard.tools_page import tools_blueprint
     app.register_blueprint(tools_blueprint)
 
     from application.projects_dashboard.projects_dashboard import projects_blueprint

@@ -1,8 +1,8 @@
 from flask import request, render_template, Blueprint
 from flask_login import login_required
 
-from admin.data.flask_login import check_is_admin_or_exit
-from admin.data.project_ids import ProjectId
+from application.data.flask_login import check_is_admin_or_exit
+from application.data.project_ids import ProjectId
 from banners.data.daily.daily_banners_repository import paginate_daily_banners
 
 daily_banners_blueprint = Blueprint('daily_banners', __name__)

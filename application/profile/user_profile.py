@@ -1,8 +1,8 @@
-from flask import Blueprint, render_template, current_app, redirect, url_for
+from flask import Blueprint, render_template, current_app
 from flask_login import login_required, current_user
 
-from admin.data.firebase.firestore_admin_content import is_admin
-from admin.data.project_ids import ProjectId
+from application.data.firestore_admin_content import is_admin
+from application.data.project_ids import ProjectId
 
 profile_blueprint = Blueprint('profile_blueprint', __name__)
 

@@ -6,7 +6,7 @@ from flask import render_template, request, url_for, send_from_directory
 from flask_login import login_required
 from werkzeug.utils import secure_filename, send_file
 
-from tools.colors_reducer.utils import reduce_image_colors
+from application.tools.colors_reducer.utils import reduce_image_colors
 
 tools_blueprint = Blueprint('tools_blueprint', __name__)
 

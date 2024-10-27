@@ -2,8 +2,8 @@ import json
 
 from github import GithubException
 
-from config import CERT_PATH, A_PATH
-from loader import repository
+from config import A_PATH
+from application.loader import repository
 
 
 def load_firebase_certificate(path):

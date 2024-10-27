@@ -11,7 +11,6 @@ auth_blueprint = Blueprint('auth', __name__)
 
 
 def validate_password(password):
-    """Validate password complexity."""
     if len(password) < 8:
         return False
     if not re.search(r"[A-Z]", password):
@@ -26,8 +25,6 @@ def validate_password(password):
 
 
 def rate_limit(func):
-    """Basic rate limiting decorator."""
-
     @wraps(func)
     def wrapper(*args, **kwargs):
         # Implement rate limiting logic here

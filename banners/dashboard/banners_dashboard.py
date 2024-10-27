@@ -3,8 +3,8 @@ from datetime import datetime
 from flask import Blueprint, render_template, url_for, jsonify
 from flask_login import login_required
 
-from admin.data.flask_login import check_is_admin_or_exit
-from admin.data.project_ids import ProjectId
+from application.data.flask_login import check_is_admin_or_exit
+from application.data.project_ids import ProjectId
 from banners.api.v2.common.banners_commands import get_daily_banner
 from banners.data.actions.actions_repository import paginate_actions
 from banners.data.mapping.banners_mapping import get_last_mapping_update, count_mapped_banners

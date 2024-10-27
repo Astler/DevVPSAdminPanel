@@ -1,6 +1,6 @@
 import config
-from admin.data.project_fields import ProjectsFields
-from admin.data.project_ids import ProjectId
+from application.data.project_fields import ProjectsFields
+from application.data.project_ids import ProjectId
 from core.firebase import get_db
 
 

@@ -1,5 +1,5 @@
-from admin.data.firebase.firestore_admin_content import get_admins_by_project_id
-from admin.data.project_ids import ProjectId
+from application.data.firestore_admin_content import get_admins_by_project_id
+from application.data.project_ids import ProjectId
 from application.base_response import BaseResponse
 
 

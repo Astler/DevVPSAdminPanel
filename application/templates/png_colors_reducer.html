@@ -2,82 +2,6 @@
 
 {% block content %}
     <style>
-        table th {
-            background-color: var(--md-sys-color-secondary-container);
-            color: var(--md-sys-color-on-secondary-container);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-
-        .logs {
-            overflow-x: auto;
-        }
-
-        .banner-preview {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-
-        .daily-banner:nth-child(1) {
-            height: 100%;
-        }
-
-        .daily-banner:nth-child(2) {
-            height: 66%;
-        }
-
-        .daily-banner:nth-child(3) {
-            height: 33%;
-        }
-
-        .banner-card, .stats-card {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .image-container {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            height: 70%;
-            flex: 1;
-        }
-
-        .daily-banner {
-            display: flex;
-            cursor: pointer;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-        }
-
-        .daily-banner img {
-            max-width: 100%;
-            max-height: 100%;
-            width: auto;
-            height: auto;
-            object-fit: contain;
-            border-radius: 8px;
-        }
-
-        .card {
-            background-color: var(--md-sys-color-surface);
-            border-radius: 16px;
-            padding: 16px;
-            flex: 1;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
-
-        {#new content#}
-
         .root-container {
             display: flex;
             flex-direction: column;
@@ -87,169 +11,364 @@
             padding: 16px;
         }
 
-        .dashboard-container {
-            display: flex;
-            gap: 16px;
-            justify-content: space-between;
+        .card {
+            background-color: var(--md-sys-color-surface);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
 
-        .actions-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 16px;
-        }
-
-        .mdc-button {
-            width: 100%;
-            height: 40px;
-            border-radius: 20px;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .mdc-button__label {
-            color: inherit;
-            text-decoration: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100%;
+        .dropzone {
+            border: 2px dashed var(--md-sys-color-outline);
+            border-radius: 16px;
+            padding: 40px 20px;
             text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: var(--md-sys-color-surface-variant);
         }
 
-        .mdc-button--raised {
-            background-color: var(--md-sys-color-primary);
-            color: var(--md-sys-color-on-primary);
+        .dropzone.drag-over {
+            border-color: var(--md-sys-color-primary);
+            background-color: var(--md-sys-color-primary-container);
         }
 
-        .image-upload-form {
-            display: flex;
-            flex-direction: column;
+        .dropzone-text {
+            color: var(--md-sys-color-on-surface-variant);
+            margin-bottom: 8px;
+        }
+
+        .preview-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 16px;
-            margin-top: 20px;
+            margin-top: 16px;
         }
 
-        .image-preview {
-            max-width: 300px;
-            max-height: 300px;
-            margin-top: 20px;
+        .preview-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: var(--md-sys-color-surface-variant);
         }
 
-        .error-message {
-            color: red;
-            margin-top: 10px;
+        .preview-image {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
         }
 
-        .debug-info {
-            background-color: #f0f0f0;
-            padding: 10px;
-            margin-top: 20px;
-            font-family: monospace;
+        .preview-remove {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: var(--md-sys-color-error);
+            color: var(--md-sys-color-on-error);
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
         }
 
-        .image-grid {
+        .preview-name {
+            padding: 8px;
+            font-size: 14px;
+            color: var(--md-sys-color-on-surface-variant);
+            word-break: break-all;
+        }
+
+        .controls {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-top: 16px;
+        }
+
+        .color-input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-input input {
+            width: 80px;
+            padding: 8px;
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: 8px;
+            background-color: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+        }
+
+        .results-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 16px;
             margin-top: 20px;
         }
 
-        .image-pair {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .image-preview {
-            max-width: 100%;
-            max-height: 200px;
-            object-fit: contain;
-        }
-
-        @media (max-width: 700px) {
-            .dashboard-container {
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-
-            .image-container {
-                height: 200px;
-            }
+        .mdc-button {
+            min-width: 120px;
         }
     </style>
 
     <div class="root-container">
         <div class="card">
             <h2>Color Reducer</h2>
-            <form id="colorReducerForm" class="image-upload-form">
-                <input type="file" name="images" accept="image/*" multiple required>
-                <input type="number" name="num_colors" min="2" max="256" value="16" required>
-                <button type="submit" class="mdc-button mdc-button--raised">
-                    <span class="mdc-button__label">Reduce Colors</span>
-                </button>
+
+            <form id="colorReducerForm">
+                <div id="dropzone" class="dropzone">
+                    <p class="dropzone-text">Drag and drop images here or click to select files</p>
+                    <input type="file" id="fileInput" multiple accept="image/*" style="display: none">
+                </div>
+
+                <div id="previewContainer" class="preview-container"></div>
+
+                <div class="controls">
+                    <div class="color-input">
+                        <label for="numColors">Number of colors:</label>
+                        <input type="number" id="numColors" name="num_colors" min="2" max="256" value="16" required>
+                    </div>
+
+                    <button type="submit" class="mdc-button mdc-button--raised" id="reduceButton" disabled>
+                        <span class="mdc-button__label">Reduce Colors</span>
+                    </button>
+                </div>
             </form>
-            <button id="downloadBtn" class="mdc-button mdc-button--raised" style="display: none;">
-                <span class="mdc-button__label">Download Compressed Images</span>
-            </button>
-            <button id="clearBtn" class="mdc-button mdc-button--raised" style="display: none;">
-                <span class="mdc-button__label">Clear Compressed Images</span>
-            </button>
-            <div id="imageGrid" class="image-grid"></div>
+
+            <div id="resultsGrid" class="results-grid"></div>
+
+            <div class="controls" style="display: none" id="resultControls">
+                <button id="downloadBtn" class="mdc-button mdc-button--raised">
+                    <span class="mdc-button__label">Download All</span>
+                </button>
+                <button id="clearBtn" class="mdc-button mdc-button--raised">
+                    <span class="mdc-button__label">Clear All</span>
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        document.getElementById('colorReducerForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const formData = new FormData(this);
+        class ImageUploader {
+            constructor() {
+                this.dropzone = document.getElementById('dropzone');
+                this.fileInput = document.getElementById('fileInput');
+                this.previewContainer = document.getElementById('previewContainer');
+                this.form = document.getElementById('colorReducerForm');
+                this.reduceButton = document.getElementById('reduceButton');
+                this.resultsGrid = document.getElementById('resultsGrid');
+                this.resultControls = document.getElementById('resultControls');
+                this.downloadBtn = document.getElementById('downloadBtn');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.numColors = document.getElementById('numColors');
 
-            fetch("{{ url_for('tools_blueprint.colors_reducer') }}", {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => response.json())
-                .then(data => {
+                this.files = new Map(); // Change to Map to store file metadata
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                // Previous event listeners remain the same
+                this.dropzone.addEventListener('click', () => this.fileInput.click());
+                this.dropzone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    this.dropzone.classList.add('drag-over');
+                });
+                this.dropzone.addEventListener('dragleave', () => {
+                    this.dropzone.classList.remove('drag-over');
+                });
+                this.dropzone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    this.dropzone.classList.remove('drag-over');
+                    this.handleFiles(e.dataTransfer.files);
+                });
+
+                this.fileInput.addEventListener('change', (e) => {
+                    this.handleFiles(e.target.files);
+                });
+
+                this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+                this.downloadBtn.addEventListener('click', () => {
+                    window.location.href = "{{ url_for('tools_blueprint.download_compressed') }}";
+                });
+                this.clearBtn.addEventListener('click', () => this.clearResults());
+
+                // Add listener for color input changes
+                this.numColors.addEventListener('change', () => {
+                    if (this.files.size > 0 && this.resultsGrid.children.length > 0) {
+                        this.handleSubmit(new Event('submit'));
+                    }
+                });
+            }
+
+            async calculateHash(file) {
+                const buffer = await file.arrayBuffer();
+                const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            }
+
+            async handleFiles(fileList) {
+                for (const file of fileList) {
+                    if (this.isValidFile(file)) {
+                        const hash = await this.calculateHash(file);
+
+                        // Check for duplicates by hash
+                        let isDuplicate = false;
+                        for (const [existingFile, metadata] of this.files.entries()) {
+                            if (metadata.hash === hash) {
+                                isDuplicate = true;
+                                break;
+                            }
+                        }
+
+                        if (!isDuplicate) {
+                            this.files.set(file, {hash, preview: null});
+                            this.createPreview(file);
+                        } else {
+                            this.showError(`File "${file.name}" is already added`);
+                        }
+                    }
+                }
+                this.updateReduceButton();
+            }
+
+            showError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.style.cssText = `
+            background-color: var(--md-sys-color-error-container);
+            color: var(--md-sys-color-on-error-container);
+            padding: 8px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        `;
+                errorDiv.textContent = message;
+
+                this.form.insertBefore(errorDiv, this.previewContainer);
+
+                // Remove error message after 3 seconds
+                setTimeout(() => {
+                    errorDiv.style.opacity = '0';
+                    setTimeout(() => errorDiv.remove(), 300);
+                }, 3000);
+            }
+
+            isValidFile(file) {
+                const validTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+                return validTypes.includes(file.type);
+            }
+
+            createPreview(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const preview = document.createElement('div');
+                    preview.className = 'preview-item';
+                    preview.innerHTML = `
+                <img src="${e.target.result}" class="preview-image" alt="${file.name}">
+                <button class="preview-remove" data-name="${file.name}">&times;</button>
+                <div class="preview-name">${file.name}</div>
+            `;
+
+                    preview.querySelector('.preview-remove').addEventListener('click', () => {
+                        this.removeFile(file);
+                        preview.remove();
+                    });
+
+                    this.previewContainer.appendChild(preview);
+                    this.files.get(file).preview = preview;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            removeFile(file) {
+                this.files.delete(file);
+                this.updateReduceButton();
+            }
+
+            updateReduceButton() {
+                this.reduceButton.disabled = this.files.size === 0;
+            }
+
+            async handleSubmit(e) {
+                e.preventDefault();
+
+                const formData = new FormData();
+                for (const [file] of this.files) {
+                    formData.append('images', file);
+                }
+                formData.append('num_colors', this.numColors.value);
+
+                try {
+                    const response = await fetch("{{ url_for('tools_blueprint.colors_reducer') }}", {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'An error occurred');
+                    }
+
                     if (data.error) {
-                        console.error('Error:', data.error);
+                        this.showError(data.error);
                         return;
                     }
-                    const imageGrid = document.getElementById('imageGrid');
-                    imageGrid.innerHTML = '';
-                    data.images.forEach(image => {
-                        const imagePair = document.createElement('div');
-                        imagePair.className = 'image-pair';
-                        imagePair.innerHTML = `
-                        <img src="${image.original}" alt="Original" class="image-preview">
-                        <img src="${image.reduced}" alt="Reduced" class="image-preview">
-                    `;
-                        imageGrid.appendChild(imagePair);
+
+                    this.displayResults(data.images);
+                } catch (error) {
+                    this.showError(error.message || 'An error occurred while processing the images');
+                    console.error('Error:', error);
+                }
+            }
+
+            displayResults(images) {
+                this.resultsGrid.innerHTML = '';
+                images.forEach(image => {
+                    const result = document.createElement('div');
+                    result.className = 'preview-item';
+                    // Add timestamp to prevent caching
+                    const timestamp = new Date().getTime();
+                    const reducedUrl = `${image.reduced}?t=${timestamp}`;
+
+                    result.innerHTML = `
+                <img src="${reducedUrl}" class="preview-image" alt="Reduced image">
+                <div class="preview-name">Reduced image</div>
+            `;
+                    this.resultsGrid.appendChild(result);
+                });
+                this.resultControls.style.display = 'flex';
+            }
+
+            async clearResults() {
+                try {
+                    const response = await fetch("{{ url_for('tools_blueprint.clear_compressed') }}", {
+                        method: 'POST'
                     });
-                    document.getElementById('downloadBtn').style.display = 'inline-block';
-                    document.getElementById('clearBtn').style.display = 'inline-block';
-                })
-                .catch(error => console.error('Error:', error));
-        });
+                    const data = await response.json();
 
-        document.getElementById('downloadBtn').addEventListener('click', function () {
-            window.location.href = "{{ url_for('tools_blueprint.download_compressed') }}";
-        });
-
-        document.getElementById('clearBtn').addEventListener('click', function () {
-            fetch("{{ url_for('tools_blueprint.clear_compressed') }}", {method: 'POST'})
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        const imageGrid = document.getElementById('imageGrid');
-                        imageGrid.innerHTML = '';
-                        this.style.display = 'none';
-                        document.getElementById('downloadBtn').style.display = 'none';
+                    if (!response.ok) {
+                        throw new Error(data.error || 'An error occurred');
                     }
-                })
-                .catch(error => console.error('Error:', error));
-        });
+
+                    if (data.status === 'success') {
+                        this.resultsGrid.innerHTML = '';
+                        this.resultControls.style.display = 'none';
+                    }
+                } catch (error) {
+                    this.showError(error.message || 'An error occurred while clearing the results');
+                    console.error('Error:', error);
+                }
+            }
+        }
+
+        // Initialize the uploader
+        new ImageUploader();
     </script>
 {% endblock %}

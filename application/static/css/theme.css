@@ -1,0 +1,27 @@
+:root {
+    --md-sys-color-background: #121620;
+    --md-sys-color-surface: #1E2430;
+    --md-sys-color-primary: #FF9800;
+    --md-sys-color-on-primary: #1E2430;
+    --md-sys-color-primary-container: #FF9800;
+    --md-sys-color-on-primary-container: #1E2430;
+    --md-sys-color-secondary: #FFB74D;
+    --md-sys-color-on-secondary: #1E2430;
+    --md-sys-color-secondary-container: #2A3241;
+    --md-sys-color-on-secondary-container: #E0E0E0;
+    --md-sys-color-on-surface: #E0E0E0;
+    --md-sys-color-surface-variant: #2A3241;
+    --md-sys-color-on-surface-variant: #B0BEC5;
+    --md-sys-color-outline: #546E7A;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--md-sys-color-background);
+    color: var(--md-sys-color-on-surface);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}

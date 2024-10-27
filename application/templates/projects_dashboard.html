@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <link href="{{ url_for('static', filename='css/projects_dashboard.css') }}" rel="stylesheet">
+
+    <div class="projects-grid">
+        {% for project in projects %}
+            <div class="project-card"
+                 onclick="window.location.href='{{ url_for('projects_blueprint.project_details', project_id=project.record_id) }}'">
+                <h3>{{ project.name }}</h3>
+                <p>Created: {{ project.date|datetime }}</p>
+            </div>
+        {% endfor %}
+
+        <div class="project-card add-project-card" onclick="showAddProjectModal()">
+            <span class="material-icons">add_circle_outline</span>
+            <p>Add New Project</p>
+        </div>
+    </div>
+
+    <div id="addProjectModal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-xl mb-4">Add New Project</h2>
+            <form method="POST" action="{{ url_for('projects_blueprint.add_project') }}">
+                <div class="form-field mb-4">
+                    <label for="name" class="block mb-2">Project Name</label>
+                    <input type="text" id="name" name="name" required
+                           class="w-full p-2 rounded bg-secondary/10 border border-secondary/20">
+                </div>
+
+                <div class="flex justify-end space-x-4">
+                    <button type="button" onclick="hideAddProjectModal()"
+                            class="mdc-button px-6">Cancel
+                    </button>
+                    <button type="submit"
+                            class="mdc-button mdc-button--raised px-6">Add Project
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showAddProjectModal() {
+            document.getElementById('addProjectModal').style.display = 'flex';
+        }
+
+        function hideAddProjectModal() {
+            document.getElementById('addProjectModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function (event) {
+            const modal = document.getElementById('addProjectModal');
+            if (event.target == modal) {
+                hideAddProjectModal();
+            }
+        }
+    </script>
+{% endblock %}

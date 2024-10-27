@@ -13,10 +13,6 @@ from cat.utils.telegram_utils import send_telegram_msg_to_me
 from config import BE_BANNERS_MAP, BE_MAP_UPDATE_HOURS
 
 
-#
-# Update time
-#
-
 def get_last_mapping_update() -> int:
     saves = read_banners_saves()
     return saves.last_mapping_time

@@ -35,6 +35,12 @@ def create_app():
     global app
     app = Flask(__name__, instance_path='/instance')
 
+    @app.template_filter('datetime')
+    def format_datetime(value, format='%Y-%m-%d %H:%M:%S'):
+        if value:
+            return datetime.fromtimestamp(value).strftime(format)
+        return ''
+
     app.config['SECRET_KEY'] = 'secret-key-goes-here'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////instance/db.sqlite'
 
@@ -64,7 +70,7 @@ def create_app():
     from auth.auth import auth_blueprint
     app.register_blueprint(auth_blueprint)
 
-    from main.main import main_blueprint
+    from application.index import main_blueprint
     app.register_blueprint(main_blueprint)
 
     from banners.dashboard.banners_dashboard import dashboard_blueprint
@@ -81,6 +87,12 @@ def create_app():
 
     from tools.dashboard.tools_page import tools_blueprint
     app.register_blueprint(tools_blueprint)
+
+    from application.projects_dashboard.projects_dashboard import projects_blueprint
+    app.register_blueprint(projects_blueprint)
+
+    from application.profile.user_profile import profile_blueprint
+    app.register_blueprint(profile_blueprint)
 
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'

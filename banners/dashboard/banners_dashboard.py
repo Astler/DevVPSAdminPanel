@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import Blueprint, render_template, current_app, url_for
+from flask import Blueprint, render_template, url_for, jsonify
 from flask_login import login_required
 
 from admin.data.flask_login import check_is_admin_or_exit
@@ -8,10 +8,20 @@ from admin.data.project_ids import ProjectId
 from banners.api.v2.common.banners_commands import get_daily_banner
 from banners.data.actions.actions_repository import paginate_actions
 from banners.data.mapping.banners_mapping import get_last_mapping_update, count_mapped_banners
-from banners.data.messed_validator.messed_banners import messed_banners_info, find_messed_banners
 from banners.data_old.banner_image_generator import get_image_data_url_by_id
 
 dashboard_blueprint = Blueprint('dashboard_blueprint', __name__)
+
+
+# Add new endpoint for async banner count
+@dashboard_blueprint.route('/be/dashboard/banner_count')
+@login_required
+def get_banner_count():
+    if not check_is_admin_or_exit(ProjectId.BANNERS_EDITOR):
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    total = count_mapped_banners()
+    return jsonify({'count': total})
 
 
 @dashboard_blueprint.route('/be/dashboard')
@@ -48,13 +58,8 @@ def banners_dashboard():
         daily_banner_url=get_image_data_url_by_id(daily_banner_data.daily_banner_id),
         daily_banner_id=daily_banner_data.daily_banner_id,
         last_mapping_time=last_mapping_time,
-        total_banners=count_mapped_banners(),
+        total_banners=0,  # Initial value, will be updated via AJAX
         admin_logs=paginate_actions(1).items,
         admins_count=count_admins(),
         buttons=buttons
     )
-
-
-@dashboard_blueprint.route('/be/find_messed_banners', methods=['GET'])
-def be_check_empty_patterns():
-    return find_messed_banners()

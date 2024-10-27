@@ -1,0 +1,3 @@
+ignore_folders=[".venv", ".idea", ".vscode", ".git", "be_files"]
+ignore_file_extensions=["pdf", "jpg", "png", "pyc", ".env"]
+ignore_name_includes=["claude_pyrojects", "requirements"]

@@ -40,7 +40,7 @@ def rate_limit(func):
 @rate_limit
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('main.profile'))
+        return redirect(url_for('profile_blueprint.profile'))
 
     if request.method == 'POST':
         email = request.form.get('email')
@@ -52,7 +52,7 @@ def login():
         if user and check_password_hash(user.password, password):
             login_user(user, remember=remember)
             next_page = request.args.get('next')
-            return redirect(next_page or url_for('main.profile'))
+            return redirect(next_page or url_for('profile_blueprint.profile'))
 
         flash('Invalid email or password', 'error')
 
@@ -63,7 +63,7 @@ def login():
 @rate_limit
 def signup():
     if current_user.is_authenticated:
-        return redirect(url_for('main.profile'))
+        return redirect(url_for('profile_blueprint.profile'))
 
     if not current_app.config['SIGN_UP_ENABLED']:
         return render_template('signup_disabled.html')

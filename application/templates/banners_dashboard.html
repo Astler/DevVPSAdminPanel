@@ -144,7 +144,8 @@
             <div class="card stats-card">
                 <h2>Statistics</h2>
                 <p>Admins Count: {{ admins_count }}</p>
-                <p>Total banners: <b>{{ total_banners }}</b><br/>Last mapping: <b>{{ last_mapping_time }}</b></p>
+                <p>Total banners: <b id="totalBannersCount">Loading...</b><br/>Last mapping:
+                    <b>{{ last_mapping_time }}</b></p>
             </div>
         </div>
 
@@ -183,6 +184,16 @@
     </div>
 
     <script>
+        fetch('/be/dashboard/banner_count')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('totalBannersCount').textContent = data.count;
+            })
+            .catch(error => {
+                console.error('Error fetching banner count:', error);
+                document.getElementById('totalBannersCount').textContent = 'Error loading count';
+            });
+
         function copyBannerId() {
             var bannerId = "{{ daily_banner_id }}";
             alert('Banner ID copied to clipboard');

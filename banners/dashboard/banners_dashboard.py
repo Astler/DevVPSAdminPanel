@@ -58,7 +58,7 @@ def banners_dashboard():
         daily_banner_url=get_image_data_url_by_id(daily_banner_data.daily_banner_id),
         daily_banner_id=daily_banner_data.daily_banner_id,
         last_mapping_time=last_mapping_time,
-        total_banners=0,  # Initial value, will be updated via AJAX
+        total_banners=0,
         admin_logs=paginate_actions(1).items,
         admins_count=count_admins(),
         buttons=buttons

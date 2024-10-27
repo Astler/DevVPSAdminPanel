@@ -35,6 +35,9 @@ def create_app():
     global app
     app = Flask(__name__, instance_path='/instance')
 
+    from application.analytics_system import init_analytics
+    init_analytics(app)
+
     @app.template_filter('datetime')
     def format_datetime(value, format='%Y-%m-%d %H:%M:%S'):
         if value:
@@ -93,6 +96,9 @@ def create_app():
 
     from application.profile.user_profile import profile_blueprint
     app.register_blueprint(profile_blueprint)
+
+    from application.analytics_system.routes import analytics_blueprint
+    app.register_blueprint(analytics_blueprint)
 
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'

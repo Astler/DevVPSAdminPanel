@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="analytics-container">
+    <h1>Analytics Test Page</h1>
+
+    <div class="card">
+        <h2>Send Test Event</h2>
+        <div class="form-field">
+            <label for="projectSelect">Project</label>
+            <select id="projectSelect" class="form-select">
+                {% for project in projects %}
+                <option value="{{ project.record_id }}" data-api-key="{{ project.api_key }}">
+                    {{ project.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-field">
+            <label for="eventKey">Event Key</label>
+            <input type="text" id="eventKey" placeholder="e.g., button_click, score, duration">
+        </div>
+
+        <div class="form-field">
+            <label for="eventValue">Event Value</label>
+            <input type="text" id="eventValue" placeholder="String, integer, or float value">
+        </div>
+
+        <button onclick="sendTestEvent()" class="mdc-button mdc-button--raised">
+            Send Event
+        </button>
+
+        <div id="responseArea" class="response-area" style="display: none;">
+            <h3>Response:</h3>
+            <pre id="responseContent"></pre>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <h2>View Events</h2>
+        <div class="form-field">
+            <label for="daysFilter">Days to Show</label>
+            <input type="number" id="daysFilter" value="7" min="1" max="30">
+        </div>
+
+        <div class="form-field">
+            <label for="keyFilter">Event Key Filter (optional)</label>
+            <input type="text" id="keyFilter" placeholder="Filter by specific event key">
+        </div>
+
+        <button onclick="viewEvents()" class="mdc-button mdc-button--raised">
+            View Events
+        </button>
+
+        <button onclick="viewAggregated()" class="mdc-button mdc-button--raised">
+            View Aggregated Data
+        </button>
+
+        <div id="eventsArea" class="response-area mt-4" style="display: none;">
+            <h3>Events:</h3>
+            <pre id="eventsContent"></pre>
+        </div>
+    </div>
+</div>
+
+<style>
+    .analytics-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .card {
+        background-color: var(--md-sys-color-surface-variant);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .form-select {
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 16px;
+        border: 1px solid var(--md-sys-color-outline);
+        border-radius: 4px;
+        background-color: var(--md-sys-color-surface);
+        color: var(--md-sys-color-on-surface);
+        margin-bottom: 16px;
+    }
+
+    .response-area {
+        margin-top: 20px;
+        padding: 16px;
+        background-color: var(--md-sys-color-surface);
+        border-radius: 4px;
+    }
+
+    .response-area pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    .mt-4 {
+        margin-top: 1.5rem;
+    }
+</style>
+
+<script>
+async function sendTestEvent() {
+    const project_id = document.getElementById('projectSelect').value;
+    const key = document.getElementById('eventKey').value;
+    const value = document.getElementById('eventValue').value;
+
+    if (!key || !value) {
+        alert('Please fill in both key and value');
+        return;
+    }
+
+    try {
+        const response = await fetch('/analytics/test/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                project_id: project_id,
+                key: key,
+                value: value
+            })
+        });
+
+        const data = await response.json();
+        showResponse(data);
+    } catch (error) {
+        showResponse({ error: error.message });
+    }
+}
+
+async function viewEvents() {
+    const apiKey = document.querySelector('#projectSelect option:checked').dataset.apiKey;
+    const days = document.getElementById('daysFilter').value;
+    const key = document.getElementById('keyFilter').value;
+
+    try {
+        const params = new URLSearchParams({
+            days: days,
+            ...(key && { key: key })
+        });
+
+        const response = await fetch(`/api/analytics/events?${params}`, {
+            headers: {
+                'X-API-Key': apiKey
+            }
+        });
+
+        const data = await response.json();
+        showEvents(data);
+    } catch (error) {
+        showEvents({ error: error.message });
+    }
+}
+
+async function viewAggregated() {
+    const apiKey = document.querySelector('#projectSelect option:checked').dataset.apiKey;
+    const days = document.getElementById('daysFilter').value;
+    const key = document.getElementById('keyFilter').value;
+
+    if (!key) {
+        alert('Please specify an event key for aggregation');
+        return;
+    }
+
+    try {
+        const params = new URLSearchParams({
+            days: days,
+            key: key
+        });
+
+        const response = await fetch(`/api/analytics/aggregate?${params}`, {
+            headers: {
+                'X-API-Key': apiKey
+            }
+        });
+
+        const data = await response.json();
+        showEvents(data);
+    } catch (error) {
+        showEvents({ error: error.message });
+    }
+}
+
+function showResponse(data) {
+    const responseArea = document.getElementById('responseArea');
+    const responseContent = document.getElementById('responseContent');
+    responseArea.style.display = 'block';
+    responseContent.textContent = JSON.stringify(data, null, 2);
+}
+
+function showEvents(data) {
+    const eventsArea = document.getElementById('eventsArea');
+    const eventsContent = document.getElementById('eventsContent');
+    eventsArea.style.display = 'block';
+    eventsContent.textContent = JSON.stringify(data, null, 2);
+}
+</script>
+{% endblock %}

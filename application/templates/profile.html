@@ -28,11 +28,15 @@
                     </a>
                 {% endif %}
                 {% if is_core_admin %}
-
                     <a href="{{ url_for('projects_blueprint.projects_dashboard') }}"
                        class="mdc-button mdc-button--raised"
                        data-mdc-auto-init="MDCRipple">
                         <span class="mdc-button__label">Projects</span>
+                    </a>
+
+                    <a href="{{ url_for('analytics.analytics_test_page') }}"
+                       class="mdc-button mdc-button--raised">
+                        <span class="mdc-button__label">Analytics Test</span>
                     </a>
                 {% endif %}
 

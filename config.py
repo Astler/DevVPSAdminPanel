@@ -6,6 +6,7 @@ load_dotenv()
 
 BOT_TOKEN = os.environ.get("TOKEN_KEY")
 MY_PROFILE_ID = os.environ.get("MY_PROFILE_ID")
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 
 API_ID = os.environ.get("API_ID")
 API_HASH = os.environ.get("API_HASH")

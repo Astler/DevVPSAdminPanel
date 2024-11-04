@@ -103,6 +103,9 @@ def create_app():
     from application.drink_lab_dashboard.drink_lab_dashboard import dashboard_drink_lab
     app.register_blueprint(dashboard_drink_lab)
 
+    from application.mi_support.mi_support import support_blueprint
+    app.register_blueprint(support_blueprint)
+
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'
     login_manager.init_app(app)

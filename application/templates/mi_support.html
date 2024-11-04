@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <style>
+
+    .root {
+        max-width: 700px;
+        margin: 0 auto;  /* Центрирование по горизонтали */
+        padding: 20px;   /* Добавим немного отступов */
+        width: 100%;     /* Полная ширина на мобильных */
+        box-sizing: border-box;  /* Включаем padding в расчет ширины */
+    }
+
+    </style>
+
+<div id="root" class="root"></div>
+
+<!-- React -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+
+<!-- Support Generator Component -->
+<script src="{{ url_for('static', filename='components/support-generator.js') }}"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(React.createElement(SupportGenerator));
+    });
+</script>
+{% endblock %}

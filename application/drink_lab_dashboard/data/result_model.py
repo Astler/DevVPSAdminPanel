@@ -7,17 +7,17 @@ from core.dependencies import app_sqlite_db
 from application.drink_lab_dashboard.data.drink_amount_ingredient_model import ParsedIngredient
 
 
-class DrinkLabAnalysisModel(app_sqlite_db.Model):
+class DrinkLabAnalysisResultModel(app_sqlite_db.Model):
     id = app_sqlite_db.Column(app_sqlite_db.Integer, primary_key=True, default=1)
     timestamp = app_sqlite_db.Column(app_sqlite_db.BigInteger)
     total_drinks = app_sqlite_db.Column(app_sqlite_db.Integer, default=0)
-    duplicate_names = app_sqlite_db.Column(app_sqlite_db.Text, default='{}')  # JSON string
-    missing_ingredients = app_sqlite_db.Column(app_sqlite_db.Text, default='[]')  # JSON string
-    strengths = app_sqlite_db.Column(app_sqlite_db.Text, default='[]')  # JSON string
-    tastes = app_sqlite_db.Column(app_sqlite_db.Text, default='[]')  # JSON string
-    bases = app_sqlite_db.Column(app_sqlite_db.Text, default='[]')  # JSON string
-    groups = app_sqlite_db.Column(app_sqlite_db.Text, default='[]')  # JSON string
-    methods = app_sqlite_db.Column(app_sqlite_db.Text, default='[]')  # JSON string
+    duplicate_names = app_sqlite_db.Column(app_sqlite_db.Text, default='{"by_ru_name":[],"by_en_name":[],"by_ingredients":[]}')
+    missing_ingredients = app_sqlite_db.Column(app_sqlite_db.Text, default='[]')
+    strengths = app_sqlite_db.Column(app_sqlite_db.Text, default='[]')
+    tastes = app_sqlite_db.Column(app_sqlite_db.Text, default='[]')
+    bases = app_sqlite_db.Column(app_sqlite_db.Text, default='[]')
+    groups = app_sqlite_db.Column(app_sqlite_db.Text, default='[]')
+    methods = app_sqlite_db.Column(app_sqlite_db.Text, default='[]')
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -38,8 +38,8 @@ class DrinkLabAnalysisModel(app_sqlite_db.Model):
         self._groups = set()
         self._methods = set()
         self.total_drinks = 0
-        # Initialize DB fields with empty JSON strings
-        self.duplicate_names = '{}'
+        # Initialize DB fields with properly formatted JSON strings
+        self.duplicate_names = json.dumps({"by_ru_name":[],"by_en_name":[],"by_ingredients":[]})
         self.missing_ingredients = '[]'
         self.strengths = '[]'
         self.tastes = '[]'
@@ -144,7 +144,11 @@ class DrinkLabAnalysisModel(app_sqlite_db.Model):
             'total_drinks': self.total_drinks,
             'last_check': datetime.fromtimestamp(self.timestamp).strftime(
                 '%Y-%m-%d %H:%M:%S') if self.timestamp else 'Never',
-            'duplicate_names': json.loads(self.duplicate_names) if self.duplicate_names else {},
+            'duplicate_names': json.loads(self.duplicate_names) if self.duplicate_names else {
+                "by_ru_name": [],
+                "by_en_name": [],
+                "by_ingredients": []
+            },
             'missing_ingredients': [
                 f'"{drink}" не найден ингредиент "{ingredient}"'
                 for drink, ingredient in json.loads(self.missing_ingredients)

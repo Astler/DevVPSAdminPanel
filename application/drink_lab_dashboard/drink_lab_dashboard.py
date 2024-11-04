@@ -10,7 +10,7 @@ from application.data.project_ids import ProjectId
 from application.drink_lab_dashboard.data.drink_ingredient_model import DrinkIngredientModel
 from application.drink_lab_dashboard.data.drink_model import DrinkModel, get_list_field
 from application.drink_lab_dashboard.data.google_sheet_service import GoogleSheetsService
-from application.drink_lab_dashboard.data.result_model import DrinkLabAnalysisModel
+from application.drink_lab_dashboard.data.result_model import DrinkLabAnalysisResultModel
 
 dashboard_drink_lab = Blueprint('dashboard_drink_lab', __name__)
 
@@ -45,7 +45,7 @@ def run_analysis():
         credentials_dict = json.loads(credentials_json)
         sheets_service = GoogleSheetsService(credentials_dict)
 
-        analysis = DrinkLabAnalysisModel.start_new_analysis()
+        analysis = DrinkLabAnalysisResultModel.start_new_analysis()
 
         ingredients_data = sheets_service.get_ingredients_data()
         DrinkIngredientModel.bulk_create_or_update(ingredients_data)
@@ -115,7 +115,7 @@ def drink_lab_dashboard():
     if not check_is_admin_or_exit(ProjectId.DRINK_LAB):
         return
 
-    analysis = DrinkLabAnalysisModel.get_latest()
+    analysis = DrinkLabAnalysisResultModel.get_latest()
     stats = analysis.to_dict() if analysis else {
         'total_drinks': 0,
         'last_check': 'Never',

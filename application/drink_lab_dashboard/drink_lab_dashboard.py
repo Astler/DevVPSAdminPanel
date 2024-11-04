@@ -42,36 +42,38 @@ def run_analysis():
         if not credentials_json:
             return jsonify({'error': 'Google credentials not configured'}), 500
 
-        credentials_dict = json.loads(credentials_json)
-        sheets_service = GoogleSheetsService(credentials_dict)
+        try:
+            credentials_dict = json.loads(credentials_json)
+        except json.JSONDecodeError as e:
+            return jsonify({'error': f'Invalid credentials format: {str(e)}'}), 500
 
+        sheets_service = GoogleSheetsService(credentials_dict)
         analysis = DrinkLabAnalysisResultModel.start_new_analysis()
 
+        # Fetch and process ingredients
         ingredients_data = sheets_service.get_ingredients_data()
         DrinkIngredientModel.bulk_create_or_update(ingredients_data)
 
         known_ingredients = DrinkIngredientModel.get_all_ingredients()
         analysis.add_known_ingredients(known_ingredients)
 
+        # Clear and update drinks
         DrinkModel.delete_all_records()
         drinks_data = sheets_service.get_drinks_data()
         DrinkModel.bulk_create_or_update(drinks_data)
 
         known_drinks = DrinkModel.get_all_drinks()
         analysis.find_duplicates(known_drinks)
-        # analysis.add_known_drinks(known_drinks)
-
         analysis.total_drinks = len(known_drinks)
 
+        # Process each drink
         for drink in known_drinks:
-            # Get lists from JSON strings
             strengths = get_list_field(drink.strength)
             tastes = get_list_field(drink.taste)
             bases = get_list_field(drink.base)
             groups = get_list_field(drink.group)
             methods = get_list_field(drink.method)
 
-            # Add all properties
             for strength in strengths:
                 analysis.add_strength(strength)
             for taste in tastes:
@@ -83,13 +85,16 @@ def run_analysis():
             for method in methods:
                 analysis.add_method(method)
 
-            # Validate ingredients
             analysis.validate_drink_ingredients(drink.name_ru, drink.ingredients)
 
-        # Save analysis to DB
         analysis.save_analysis()
+        result = analysis.to_dict()
 
-        return jsonify(analysis.to_dict())
+        try:
+            return jsonify(result)
+        except TypeError as e:
+            current_app.logger.error(f"JSON serialization error: {str(e)}")
+            return jsonify({'error': 'Error serializing analysis results'}), 500
 
     except Exception as e:
         current_app.logger.error(f"Analysis error: {str(e)}")

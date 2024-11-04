@@ -19,6 +19,14 @@
     <div class="dashboard-container">
         <div class="card">
             <div class="actions-grid">
+                {% if is_drink_lab_admin %}
+
+                    <a href="{{ url_for('dashboard_drink_lab.drink_lab_dashboard') }}"
+                       class="mdc-button mdc-button--raised"
+                       data-mdc-auto-init="MDCRipple">
+                        <span class="mdc-button__label">Drink Lab</span>
+                    </a>
+                {% endif %}
                 {% if is_banner_admin %}
 
                     <a href="{{ url_for('dashboard_blueprint.banners_dashboard') }}"

@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="root-container">
+        <div class="dashboard-container">
+            <div class="card">
+                <h2>Ingredients</h2>
+                <h3>Unique Values</h3>
+                <div class="values-grid">
+                    <div class="values-section-card">
+                        <div class="values-header">
+                            <span class="material-icons">category</span>
+                            <h4>Categories</h4>
+                        </div>
+                        <ul>
+                            {% for category in unique_values.categories %}
+                                <li>{{ category }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="values-section-card">
+                        <div class="values-header">
+                            <span class="material-icons">local_fire_department</span>
+                            <h4>Strengths</h4>
+                        </div>
+                        <ul>
+                            {% for strength in unique_values.strengths %}
+                                <li>{{ strength }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="values-section-card">
+                        <div class="values-header">
+                            <span class="material-icons">restaurant_menu</span>
+                            <h4>Tastes</h4>
+                        </div>
+                        <ul>
+                            {% for taste in unique_values.tastes %}
+                                <li>{{ taste }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="values-section-card">
+                        <div class="values-header">
+                            <span class="material-icons">local_bar</span>
+                            <h4>Bases</h4>
+                        </div>
+                        <ul>
+                            {% for base in unique_values.bases %}
+                                <li>{{ base }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <h3>List</h3>
+                <div class="table-container">
+                    <table class="ingredients-table">
+                        <thead>
+                        <tr>
+                            <th>Name (RU)</th>
+                            <th>Name (EN)</th>
+                            <th>Category</th>
+                            <th>Strength</th>
+                            <th>Taste</th>
+                            <th>Base</th>
+                            <th>Description</th>
+                            <th>Last Updated</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for ingredient in ingredients %}
+                            <tr>
+                                <td>{{ ingredient.name_ru }}</td>
+                                <td>{{ ingredient.name_en }}</td>
+                                <td>{{ ingredient.category }}</td>
+                                <td>{{ ingredient.strength }}</td>
+                                <td>{{ ingredient.taste }}</td>
+                                <td>{{ ingredient.base }}</td>
+                                <td>{{ ingredient.description|truncate(100) }}</td>
+                                <td>{{ ingredient.updated_at|datetime }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .values-section h4 {
+            color: var(--md-sys-color-primary);
+            margin-bottom: 10px;
+        }
+
+        .values-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .values-section li {
+            padding: 5px 0;
+            border-bottom: 1px solid var(--md-sys-color-outline);
+        }
+
+        .ingredients-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+        }
+
+        .ingredients-table th,
+        .ingredients-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--md-sys-color-outline);
+        }
+
+        .ingredients-table th {
+            background-color: var(--md-sys-color-surface-variant);
+            color: var(--md-sys-color-on-surface-variant);
+        }
+
+        .values-grid {
+            display: grid;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        /* Responsive grid */
+        @media (min-width: 600px) {
+            .values-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .values-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .values-section-card {
+            background-color: var(--md-sys-color-surface-variant);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .values-section-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .values-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--md-sys-color-primary);
+        }
+
+        .values-header .material-icons {
+            color: var(--md-sys-color-primary);
+            font-size: 24px;
+        }
+
+        .values-header h4 {
+            color: var(--md-sys-color-on-surface-variant);
+            margin: 0;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .values-section-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .values-section-card li {
+            padding: 8px 12px;
+            margin: 4px 0;
+            background-color: var(--md-sys-color-surface);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .values-section-card li:hover {
+            background-color: var(--md-sys-color-primary-container);
+        }
+
+        /* Scrollbar styling */
+        .values-section-card ul::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .values-section-card ul::-webkit-scrollbar-track {
+            background: var(--md-sys-color-surface);
+            border-radius: 3px;
+        }
+
+        .values-section-card ul::-webkit-scrollbar-thumb {
+            background: var(--md-sys-color-primary);
+            border-radius: 3px;
+        }
+
+        @media (max-width: 1200px) {
+            .table-container {
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .ingredients-table {
+                min-width: 800px;
+            }
+
+            .drinks-table th,
+            .drinks-table td {
+                white-space: nowrap;
+            }
+        }
+    </style>
+{% endblock %}

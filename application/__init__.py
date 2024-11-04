@@ -100,6 +100,9 @@ def create_app():
     from application.analytics_system.routes import analytics_blueprint
     app.register_blueprint(analytics_blueprint)
 
+    from application.drink_lab_dashboard.drink_lab_dashboard import dashboard_drink_lab
+    app.register_blueprint(dashboard_drink_lab)
+
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'
     login_manager.init_app(app)

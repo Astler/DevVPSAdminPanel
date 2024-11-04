@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="root-container">
+        <div class="dashboard-container">
+            <div class="card">
+                <h2>Drinks</h2>
+                <div class="table-container">
+                    <table class="drinks-table">
+                        <thead>
+                            <tr>
+                                <th>Name (RU)</th>
+                                <th>Name (EN)</th>
+                                <th>Strength</th>
+                                <th>Taste</th>
+                                <th>Base</th>
+                                <th>Method</th>
+                                <th>Ingredients</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for drink in drinks %}
+                                <tr>
+                                    <td>{{ drink.name_ru }}</td>
+                                    <td>{{ drink.name_en }}</td>
+                                    <td>{{ drink.strength }}</td>
+                                    <td>{{ drink.taste }}</td>
+                                    <td>{{ drink.base }}</td>
+                                    <td>{{ drink.method }}</td>
+                                    <td>{{ drink.ingredients }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .drinks-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+        }
+
+        .drinks-table th,
+        .drinks-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--md-sys-color-outline);
+        }
+
+        .drinks-table th {
+            background-color: var(--md-sys-color-surface-variant);
+            color: var(--md-sys-color-on-surface-variant);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .drinks-table tr:hover {
+            background-color: var(--md-sys-color-surface-variant);
+        }
+
+        @media (max-width: 1200px) {
+            .table-container {
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .drinks-table {
+                min-width: 800px;
+            }
+
+            .drinks-table th,
+            .drinks-table td {
+                white-space: nowrap;
+            }
+        }
+    </style>
+{% endblock %}

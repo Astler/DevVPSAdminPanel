@@ -20,11 +20,14 @@
         <div class="card">
             <div class="actions-grid">
                 {% if is_drink_lab_admin %}
-
                     <a href="{{ url_for('dashboard_drink_lab.drink_lab_dashboard') }}"
                        class="mdc-button mdc-button--raised"
                        data-mdc-auto-init="MDCRipple">
                         <span class="mdc-button__label">Drink Lab</span>
+                    </a>
+
+                    <a href="{{ url_for('support.support_page') }}" class="mdc-button mdc-button--raised">
+                        <span class="mdc-button__label">Генератор поддержки</span>
                     </a>
                 {% endif %}
                 {% if is_banner_admin %}
@@ -47,10 +50,6 @@
                         <span class="mdc-button__label">Analytics Test</span>
                     </a>
                 {% endif %}
-
-                <a href="{{ url_for('support.support_page') }}" class="mdc-button mdc-button--raised">
-                    <span class="mdc-button__label">Генератор поддержки</span>
-                </a>
 
                 <a href="{{ url_for('tools_blueprint.tools') }}" class="mdc-button mdc-button--raised"
                    data-mdc-auto-init="MDCRipple">

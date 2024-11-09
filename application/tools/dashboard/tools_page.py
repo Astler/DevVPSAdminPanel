@@ -16,7 +16,6 @@ tools_blueprint = Blueprint('tools_blueprint', __name__)
 
 
 @tools_blueprint.route('/tools')
-@login_required
 def tools():
     buttons = [
         {
@@ -115,13 +114,11 @@ def allowed_file(filename):
 
 
 @tools_blueprint.route('/tools/strings_exporter')
-@login_required
 def strings_exporter():
     return render_template('strings_exporter.html')
 
 
 @tools_blueprint.route('/tools/export_strings', methods=['POST', 'GET', 'OPTIONS'])
-@login_required
 def export_strings():
     # Handle OPTIONS request for CORS
     if request.method == 'OPTIONS':
@@ -206,7 +203,6 @@ def export_strings():
 
 
 @tools_blueprint.route('/tools/download_strings')
-@login_required
 def download_strings():
     zip_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'android_strings.zip')
     if not os.path.exists(zip_path):

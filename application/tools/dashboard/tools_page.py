@@ -193,7 +193,13 @@ def export_strings():
 
         shutil.rmtree(temp_dir)
 
-        return jsonify({'status': 'success'})
+        return send_file(
+            zip_path,
+            mimetype='application/zip',
+            as_attachment=True,
+            download_name='android_strings.zip',
+            environ=request.environ
+        )
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500

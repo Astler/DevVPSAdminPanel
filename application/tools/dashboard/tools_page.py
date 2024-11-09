@@ -120,11 +120,19 @@ def strings_exporter():
     return render_template('strings_exporter.html')
 
 
-@tools_blueprint.route('/tools/export_strings', methods=['POST'])
+@tools_blueprint.route('/tools/export_strings', methods=['POST', 'GET', 'OPTIONS'])
 @login_required
 def export_strings():
-    data = request.get_json()
-    sheets_url = data.get('sheetsUrl')
+    # Handle OPTIONS request for CORS
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', '*')
+        response.headers.add('Access-Control-Allow-Methods', '*')
+        return response
+
+    # Get sheets URL either from GET or POST
+    sheets_url = request.args.get('sheetsUrl') or request.json.get('sheetsUrl')
 
     if not sheets_url:
         return jsonify({'error': 'No sheets URL provided'}), 400

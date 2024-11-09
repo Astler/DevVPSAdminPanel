@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="root-container">
+        <div class="dashboard-container">
+            <div class="card">
+                <h2>Google Sheets to Android Strings Converter</h2>
+
+                <form id="exportForm" class="form-field">
+                    <div class="mb-4">
+                        <label for="sheetsUrl">Google Sheets URL</label>
+                        <input type="text" id="sheetsUrl" name="sheetsUrl"
+                               placeholder="https://docs.google.com/spreadsheets/d/..."
+                               class="w-full p-2 border rounded">
+                    </div>
+
+                    <br>
+
+                    <button type="submit" class="mdc-button mdc-button--raised">
+                        Export Strings
+                    </button>
+                </form>
+
+                <div id="status" style="display: none;" class="mt-4 p-4 rounded">
+                    Processing...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('exportForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            status.textContent = 'Processing...';
+
+            try {
+                const response = await fetch('/tools/export_strings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sheetsUrl: document.getElementById('sheetsUrl').value
+                    })
+                });
+
+                if (response.ok) {
+                    status.textContent = 'Success! Downloading...';
+                    // Trigger download
+                    window.location.href = '/tools/download_strings';
+                } else {
+                    const error = await response.json();
+                    status.textContent = `Error: ${error.error}`;
+                }
+            } catch (error) {
+                status.textContent = `Error: ${error.message}`;
+            }
+        });
+    </script>
+{% endblock %}

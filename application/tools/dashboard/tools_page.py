@@ -195,7 +195,7 @@ def export_strings():
 
         return send_file(
             zip_path,
-            mimetype='application/zip',
+            mimetype='application/octet-stream',
             as_attachment=True,
             download_name='android_strings.zip',
             environ=request.environ

@@ -111,7 +111,69 @@
             margin-top: 20px;
         }
 
+        .progress-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .progress-container {
+            background: var(--md-sys-color-surface);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            max-width: 300px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--md-sys-color-surface-variant);
+            border-radius: 2px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--md-sys-color-primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            color: var(--md-sys-color-on-surface);
+            margin: 8px 0;
+        }
+
+        .processing-details {
+            font-size: 14px;
+            color: var(--md-sys-color-on-surface-variant);
+            margin-top: 8px;
+        }
+
     </style>
+
+    <div class="progress-overlay" id="progressOverlay">
+        <div class="progress-container">
+            <h3>Processing Images</h3>
+            <div class="progress-bar">
+                <div class="progress-bar-fill" id="progressBarFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Processing image 0 of 0</div>
+            <div class="processing-details" id="processingDetails">Preparing...</div>
+        </div>
+    </div>
 
     <div class="root-container">
         <div class="card">
@@ -151,8 +213,10 @@
     </div>
 
     <script>
+        //Add this to your <script> tag
         class ImageUploader {
             constructor() {
+                // Initialize DOM elements
                 this.dropzone = document.getElementById('dropzone');
                 this.fileInput = document.getElementById('fileInput');
                 this.previewContainer = document.getElementById('previewContainer');
@@ -164,12 +228,19 @@
                 this.clearBtn = document.getElementById('clearBtn');
                 this.numColors = document.getElementById('numColors');
 
-                this.files = new Map(); // Change to Map to store file metadata
+                // Progress elements
+                this.progressOverlay = document.getElementById('progressOverlay');
+                this.progressBarFill = document.getElementById('progressBarFill');
+                this.progressText = document.getElementById('progressText');
+                this.processingDetails = document.getElementById('processingDetails');
+
+                // Initialize file storage
+                this.files = new Map(); // Store file metadata
                 this.setupEventListeners();
             }
 
             setupEventListeners() {
-                // Previous event listeners remain the same
+                // Dropzone events
                 this.dropzone.addEventListener('click', () => this.fileInput.click());
                 this.dropzone.addEventListener('dragover', (e) => {
                     e.preventDefault();
@@ -184,17 +255,23 @@
                     this.handleFiles(e.dataTransfer.files);
                 });
 
+                // File input change
                 this.fileInput.addEventListener('change', (e) => {
                     this.handleFiles(e.target.files);
                 });
 
+                // Form submission
                 this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+
+                // Download button
                 this.downloadBtn.addEventListener('click', () => {
-                    window.location.href = "{{ url_for('tools_blueprint.download_compressed') }}";
+                    window.location.href = "/tools/download_compressed";
                 });
+
+                // Clear button
                 this.clearBtn.addEventListener('click', () => this.clearResults());
 
-                // Add listener for color input changes
+                // Color input changes
                 this.numColors.addEventListener('change', () => {
                     if (this.files.size > 0 && this.resultsGrid.children.length > 0) {
                         this.handleSubmit(new Event('submit'));
@@ -210,28 +287,36 @@
             }
 
             async handleFiles(fileList) {
+                const promises = [];
                 for (const file of fileList) {
                     if (this.isValidFile(file)) {
-                        const hash = await this.calculateHash(file);
-
-                        // Check for duplicates by hash
-                        let isDuplicate = false;
-                        for (const [existingFile, metadata] of this.files.entries()) {
-                            if (metadata.hash === hash) {
-                                isDuplicate = true;
-                                break;
-                            }
-                        }
-
-                        if (!isDuplicate) {
-                            this.files.set(file, {hash, preview: null});
-                            this.createPreview(file);
-                        } else {
-                            this.showError(`File "${file.name}" is already added`);
-                        }
+                        promises.push(this.processFile(file));
+                    } else {
+                        this.showError(`Invalid file type: ${file.name}`);
                     }
                 }
+
+                await Promise.all(promises);
                 this.updateReduceButton();
+            }
+
+            async processFile(file) {
+                try {
+                    const hash = await this.calculateHash(file);
+
+                    // Check for duplicates
+                    for (const [existingFile, metadata] of this.files.entries()) {
+                        if (metadata.hash === hash) {
+                            this.showError(`File "${file.name}" is already added`);
+                            return;
+                        }
+                    }
+
+                    this.files.set(file, {hash, preview: null});
+                    this.createPreview(file);
+                } catch (error) {
+                    this.showError(`Error processing file "${file.name}": ${error.message}`);
+                }
             }
 
             showError(message) {
@@ -250,7 +335,6 @@
 
                 this.form.insertBefore(errorDiv, this.previewContainer);
 
-                // Remove error message after 3 seconds
                 setTimeout(() => {
                     errorDiv.style.opacity = '0';
                     setTimeout(() => errorDiv.remove(), 300);
@@ -273,7 +357,8 @@
                 <div class="preview-name">${file.name}</div>
             `;
 
-                    preview.querySelector('.preview-remove').addEventListener('click', () => {
+                    preview.querySelector('.preview-remove').addEventListener('click', (e) => {
+                        e.stopPropagation();
                         this.removeFile(file);
                         preview.remove();
                     });
@@ -293,33 +378,69 @@
                 this.reduceButton.disabled = this.files.size === 0;
             }
 
+            showProgress() {
+                this.progressOverlay.style.display = 'flex';
+                this.progressBarFill.style.width = '0%';
+                this.progressText.textContent = 'Preparing to process...';
+                this.processingDetails.textContent = 'Initializing...';
+            }
+
+            hideProgress() {
+                this.progressOverlay.style.display = 'none';
+            }
+
+            updateProgress(current, total) {
+                const percentage = (current / total) * 100;
+                this.progressBarFill.style.width = `${percentage}%`;
+                this.progressText.textContent = `Processing image ${current} of ${total}`;
+                this.processingDetails.textContent = current === total ?
+                    'Finalizing...' :
+                    'Reducing colors and optimizing images...';
+            }
+
             async handleSubmit(e) {
                 e.preventDefault();
 
                 const formData = new FormData();
+                const totalFiles = this.files.size;
+                let processedCount = 0;
+
+                this.showProgress();
+                this.updateProgress(0, totalFiles);
+
                 for (const [file] of this.files) {
                     formData.append('images', file);
                 }
                 formData.append('num_colors', this.numColors.value);
 
                 try {
-                    const response = await fetch("{{ url_for('tools_blueprint.colors_reducer') }}", {
+                    const response = await fetch("/tools/colors_reducer", {
                         method: 'POST',
                         body: formData
                     });
-                    const data = await response.json();
 
                     if (!response.ok) {
-                        throw new Error(data.error || 'An error occurred');
+                        throw new Error(`HTTP error! status: ${response.status}`);
                     }
+
+                    const data = await response.json();
 
                     if (data.error) {
-                        this.showError(data.error);
-                        return;
+                        throw new Error(data.error);
                     }
 
-                    this.displayResults(data.images);
+                    processedCount = data.images.length;
+                    this.updateProgress(processedCount, totalFiles);
+
+                    this.processingDetails.textContent = 'Processing complete!';
+
+                    setTimeout(() => {
+                        this.hideProgress();
+                        this.displayResults(data.images);
+                    }, 500);
+
                 } catch (error) {
+                    this.hideProgress();
                     this.showError(error.message || 'An error occurred while processing the images');
                     console.error('Error:', error);
                 }
@@ -327,19 +448,31 @@
 
             displayResults(images) {
                 this.resultsGrid.innerHTML = '';
-                images.forEach(image => {
+
+                images.forEach((image, index) => {
                     const result = document.createElement('div');
                     result.className = 'preview-item';
-                    // Add timestamp to prevent caching
-                    const timestamp = new Date().getTime();
-                    const reducedUrl = `${image.reduced}?t=${timestamp}`;
 
-                    result.innerHTML = `
-                <img src="${reducedUrl}" class="preview-image" alt="Reduced image">
-                <div class="preview-name">Reduced image</div>
-            `;
+                    if (image.success) {
+                        const timestamp = new Date().getTime();
+                        const reducedUrl = `${image.reduced}?t=${timestamp}`;
+
+                        result.innerHTML = `
+                    <img src="${reducedUrl}" class="preview-image" alt="Reduced image">
+                    <div class="preview-name">${image.originalName || 'Reduced image'}</div>
+                `;
+                    } else {
+                        result.innerHTML = `
+                    <div class="preview-image" style="display: flex; align-items: center; justify-content: center; background: var(--md-sys-color-error-container);">
+                        <span style="color: var(--md-sys-color-on-error-container);">Processing Failed</span>
+                    </div>
+                    <div class="preview-name">${image.originalName || 'Failed image'}</div>
+                `;
+                    }
+
                     this.resultsGrid.appendChild(result);
                 });
+
                 this.resultControls.style.display = 'flex';
             }
 
@@ -357,6 +490,10 @@
                     if (data.status === 'success') {
                         this.resultsGrid.innerHTML = '';
                         this.resultControls.style.display = 'none';
+                        // Also clear the file input and preview
+                        this.files.clear();
+                        this.previewContainer.innerHTML = '';
+                        this.updateReduceButton();
                     }
                 } catch (error) {
                     this.showError(error.message || 'An error occurred while clearing the results');

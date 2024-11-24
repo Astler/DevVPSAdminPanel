@@ -1,4 +1,5 @@
 import os
+import time
 import zipfile
 
 from flask import Blueprint, current_app, jsonify
@@ -46,30 +47,94 @@ def colors_reducer():
             return jsonify({'error': 'No file part'}), 400
 
         files = request.files.getlist('images')
-        num_colors = int(request.form['num_colors'])
-
+        num_colors = int(request.form.get('num_colors', 256))
         processed_images = []
         upload_folder = current_app.config['UPLOAD_FOLDER']
 
+        # Clean up any existing files before processing
+        cleanup_upload_folder(upload_folder)
+
         for file in files:
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                original_path = os.path.join(upload_folder, filename)
-                file.save(original_path)
+            if not file or not file.filename:
+                continue
 
-                reduced_filename = f"reduced_{filename}"
-                reduced_path = os.path.join(upload_folder, reduced_filename)
-
+            if allowed_file(file.filename):
                 try:
-                    reduce_image_colors(original_path, num_colors, reduced_path)
-                    processed_images.append({
-                        'original': url_for('tools_blueprint.uploaded_file', filename=filename),
-                        'reduced': url_for('tools_blueprint.uploaded_file', filename=reduced_filename)
-                    })
-                except Exception as e:
-                    current_app.logger.error(f"Error processing image {filename}: {str(e)}")
+                    # Use simple numbered naming to avoid duplicates
+                    filename = secure_filename(file.filename)
+                    base_name, ext = os.path.splitext(filename)
 
-        return jsonify({'images': processed_images})
+                    # Use a temporary path for processing
+                    temp_path = os.path.join(upload_folder, f"temp_{filename}")
+                    file.save(temp_path)
+
+                    # Create reduced filename
+                    reduced_filename = f"reduced_{filename}"
+                    reduced_path = os.path.join(upload_folder, reduced_filename)
+
+                    # Process the image
+                    reduce_image_colors(temp_path, num_colors, reduced_path)
+
+                    # Only keep the reduced version
+                    if os.path.exists(temp_path):
+                        os.remove(temp_path)
+
+                    if os.path.exists(reduced_path):
+                        processed_images.append({
+                            'reduced': url_for('tools_blueprint.uploaded_file',
+                                               filename=reduced_filename,
+                                               _external=True),
+                            'originalName': file.filename,
+                            'success': True
+                        })
+                except Exception as e:
+                    current_app.logger.error(f"Error processing image {file.filename}: {str(e)}")
+                    processed_images.append({
+                        'originalName': file.filename,
+                        'success': False,
+                        'error': str(e)
+                    })
+                    # Clean up any temporary files
+                    if os.path.exists(temp_path):
+                        os.remove(temp_path)
+                    continue
+
+        if not processed_images:
+            return jsonify({'error': 'No valid images were processed'}), 400
+
+        return jsonify({
+            'images': processed_images,
+            'baseUrl': request.host_url.rstrip('/')
+        })
+
+
+def cleanup_upload_folder(folder):
+    """Clean up old files from the upload folder"""
+    try:
+        current_time = time.time()
+        for filename in os.listdir(folder):
+            file_path = os.path.join(folder, filename)
+            if current_time - os.path.getmtime(file_path) < 3600:
+                continue
+            # Remove old files
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+    except Exception as e:
+        current_app.logger.error(f"Error cleaning up folder: {str(e)}")
+
+
+@tools_blueprint.route('/tools/clear_compressed', methods=['POST'])
+@login_required
+def clear_compressed():
+    """Clear all processed files"""
+    upload_folder = current_app.config['UPLOAD_FOLDER']
+    cleanup_upload_folder(upload_folder)
+    return jsonify({'status': 'success'})
+
+
+def allowed_file(filename):
+    """Check if file is allowed"""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 
 @tools_blueprint.route('/tools/download_compressed')
@@ -92,25 +157,18 @@ def download_compressed():
         environ=request.environ
     )
 
-
-@tools_blueprint.route('/tools/clear_compressed', methods=['POST'])
-@login_required
-def clear_compressed():
-    upload_folder = current_app.config['UPLOAD_FOLDER']
-    for file in os.listdir(upload_folder):
-        if file.startswith('reduced_'):
-            os.remove(os.path.join(upload_folder, file))
-    return jsonify({'status': 'success'})
-
-
 @tools_blueprint.route('/uploads/<filename>')
 @login_required
 def uploaded_file(filename):
-    return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
-
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    try:
+        response = send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
+    except Exception as e:
+        current_app.logger.error(f"Error serving file {filename}: {str(e)}")
+        return jsonify({'error': 'File not found'}), 404
 
 
 @tools_blueprint.route('/tools/strings_exporter')

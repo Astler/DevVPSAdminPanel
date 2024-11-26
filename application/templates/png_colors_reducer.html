@@ -236,6 +236,7 @@
 
                 // Initialize file storage
                 this.files = new Map(); // Store file metadata
+                this.processedImages = [];
                 this.setupEventListeners();
             }
 
@@ -434,9 +435,12 @@
 
                     this.processingDetails.textContent = 'Processing complete!';
 
+                    // New: Store processed image data
+                    this.processedImages = data.images;
+
                     setTimeout(() => {
                         this.hideProgress();
-                        this.displayResults(data.images);
+                        this.displayResults(this.processedImages);
                     }, 500);
 
                 } catch (error) {
@@ -460,7 +464,15 @@
                         result.innerHTML = `
                     <img src="${reducedUrl}" class="preview-image" alt="Reduced image">
                     <div class="preview-name">${image.originalName || 'Reduced image'}</div>
+                    <button class="preview-download" data-url="${reducedUrl}" data-name="${image.originalName}">Download</button>
                 `;
+
+                        // New: Add event listener for individual file download
+                        result.querySelector('.preview-download').addEventListener('click', (e) => {
+                            const downloadUrl = e.target.dataset.url;
+                            const fileName = e.target.dataset.name;
+                            this.downloadFile(downloadUrl, fileName);
+                        });
                     } else {
                         result.innerHTML = `
                     <div class="preview-image" style="display: flex; align-items: center; justify-content: center; background: var(--md-sys-color-error-container);">
@@ -474,10 +486,27 @@
                 });
 
                 this.resultControls.style.display = 'flex';
+                this.downloadBtn.disabled = false;
+            }
+
+            async downloadFile(url, fileName) {
+                try {
+                    const response = await fetch(url);
+                    const blob = await response.blob();
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = URL.createObjectURL(blob);
+                    downloadLink.setAttribute('download', fileName);
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                } catch (error) {
+                    this.showError(`Error downloading file: ${error.message}`);
+                }
             }
 
             async clearResults() {
                 try {
+                    // Clear the files on the server
                     const response = await fetch("{{ url_for('tools_blueprint.clear_compressed') }}", {
                         method: 'POST'
                     });
@@ -488,12 +517,13 @@
                     }
 
                     if (data.status === 'success') {
+                        // Clear the UI and local data
                         this.resultsGrid.innerHTML = '';
                         this.resultControls.style.display = 'none';
-                        // Also clear the file input and preview
                         this.files.clear();
                         this.previewContainer.innerHTML = '';
                         this.updateReduceButton();
+                        this.processedImages = [];
                     }
                 } catch (error) {
                     this.showError(error.message || 'An error occurred while clearing the results');

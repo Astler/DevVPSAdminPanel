@@ -51,8 +51,7 @@ def colors_reducer():
         processed_images = []
         upload_folder = current_app.config['UPLOAD_FOLDER']
 
-        # Clean up any existing files before processing
-        cleanup_upload_folder(upload_folder)
+        clear_compressed()
 
         for file in files:
             if not file or not file.filename:
@@ -108,27 +107,18 @@ def colors_reducer():
         })
 
 
-def cleanup_upload_folder(folder):
-    """Clean up old files from the upload folder"""
-    try:
-        current_time = time.time()
-        for filename in os.listdir(folder):
-            file_path = os.path.join(folder, filename)
-            if current_time - os.path.getmtime(file_path) < 3600:
-                continue
-            # Remove old files
-            if os.path.isfile(file_path):
-                os.remove(file_path)
-    except Exception as e:
-        current_app.logger.error(f"Error cleaning up folder: {str(e)}")
-
-
 @tools_blueprint.route('/tools/clear_compressed', methods=['POST'])
 @login_required
 def clear_compressed():
     """Clear all processed files"""
     upload_folder = current_app.config['UPLOAD_FOLDER']
-    cleanup_upload_folder(upload_folder)
+    try:
+        for filename in os.listdir(upload_folder):
+            file_path = os.path.join(upload_folder, filename)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+    except Exception as e:
+        current_app.logger.error(f"Error clearing upload folder: {str(e)}")
     return jsonify({'status': 'success'})
 
 
@@ -156,6 +146,7 @@ def download_compressed():
         download_name='compressed_images.zip',
         environ=request.environ
     )
+
 
 @tools_blueprint.route('/uploads/<filename>')
 @login_required

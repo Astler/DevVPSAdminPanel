@@ -469,8 +469,19 @@
 
                         // New: Add event listener for individual file download
                         result.querySelector('.preview-download').addEventListener('click', (e) => {
-                            const downloadUrl = e.target.dataset.url;
+                            let downloadUrl = e.target.dataset.url;
                             const fileName = e.target.dataset.name;
+
+                            // Convert HTTP to HTTPS if needed
+                            if (downloadUrl.startsWith('http:')) {
+                                downloadUrl = downloadUrl.replace('http:', 'https:');
+                            }
+
+                            // Make URL absolute if it's relative
+                            if (downloadUrl.startsWith('/')) {
+                                downloadUrl = `${window.location.origin}${downloadUrl}`;
+                            }
+
                             this.downloadFile(downloadUrl, fileName);
                         });
                     } else {

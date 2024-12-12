@@ -1,8 +1,9 @@
 import os
 import time
 import zipfile
+from uuid import uuid4
 
-from flask import Blueprint, current_app, jsonify
+from flask import Blueprint, current_app, jsonify, session
 from flask import render_template, request, url_for, send_from_directory
 from flask_login import login_required
 from werkzeug.utils import secure_filename, send_file
@@ -12,6 +13,7 @@ import re
 import json
 import shutil
 from application.drink_lab_dashboard.data.google_sheet_service import GoogleSheetsService
+from application.tools.user_storage import UserStorage
 
 tools_blueprint = Blueprint('tools_blueprint', __name__)
 
@@ -34,8 +36,6 @@ def tools():
     )
 
 
-# inspired by https://onlinepngtools.com/decrease-png-color-count
-# todo https://onlinepngtools.com/find-png-color-count
 @tools_blueprint.route('/tools/colors_reducer', methods=['GET', 'POST'])
 @login_required
 def colors_reducer():
@@ -43,15 +43,20 @@ def colors_reducer():
         return render_template('png_colors_reducer.html')
 
     elif request.method == 'POST':
+        storage = UserStorage(current_app.config['UPLOAD_FOLDER'])
+        user_folder = storage.get_user_folder()
+
         if 'images' not in request.files:
             return jsonify({'error': 'No file part'}), 400
 
         files = request.files.getlist('images')
         num_colors = int(request.form.get('num_colors', 256))
         processed_images = []
-        upload_folder = current_app.config['UPLOAD_FOLDER']
 
-        clear_compressed()
+        # Cleanup old files in user's folder
+        for filename in os.listdir(user_folder):
+            if filename.startswith('temp_') or filename.startswith('reduced_'):
+                os.remove(os.path.join(user_folder, filename))
 
         for file in files:
             if not file or not file.filename:
@@ -59,47 +64,47 @@ def colors_reducer():
 
             if allowed_file(file.filename):
                 try:
-                    # Use simple numbered naming to avoid duplicates
-                    filename = secure_filename(file.filename)
-                    base_name, ext = os.path.splitext(filename)
+                    unique_id = str(uuid4())
+                    original_ext = os.path.splitext(file.filename)[1]
+                    temp_filename = f"temp_{unique_id}{original_ext}"
+                    reduced_filename = f"reduced_{unique_id}{original_ext}"
 
-                    # Use a temporary path for processing
-                    temp_path = os.path.join(upload_folder, f"temp_{filename}")
+                    temp_path = os.path.join(user_folder, temp_filename)
+                    reduced_path = os.path.join(user_folder, reduced_filename)
+
                     file.save(temp_path)
-
-                    # Create reduced filename
-                    reduced_filename = f"reduced_{filename}"
-                    reduced_path = os.path.join(upload_folder, reduced_filename)
-
-                    # Process the image
                     reduce_image_colors(temp_path, num_colors, reduced_path)
 
-                    # Only keep the reduced version
                     if os.path.exists(temp_path):
                         os.remove(temp_path)
 
                     if os.path.exists(reduced_path):
+                        # Return cached URL for frontend
+                        cache_url = url_for('tools_blueprint.uploaded_file',
+                                            filename=reduced_filename,
+                                            user_folder=session['user_folder'],
+                                            _external=True)
                         processed_images.append({
-                            'reduced': url_for('tools_blueprint.uploaded_file',
-                                               filename=reduced_filename,
-                                               _external=True),
+                            'reduced': cache_url,
                             'originalName': file.filename,
-                            'success': True
+                            'success': True,
+                            'cacheKey': unique_id  # For browser caching
                         })
                 except Exception as e:
-                    current_app.logger.error(f"Error processing image {file.filename}: {str(e)}")
+                    current_app.logger.error(f"Error processing {file.filename}: {str(e)}")
                     processed_images.append({
                         'originalName': file.filename,
                         'success': False,
                         'error': str(e)
                     })
-                    # Clean up any temporary files
                     if os.path.exists(temp_path):
                         os.remove(temp_path)
-                    continue
 
         if not processed_images:
             return jsonify({'error': 'No valid images were processed'}), 400
+
+        # Cleanup old folders
+        storage.cleanup_old_folders()
 
         return jsonify({
             'images': processed_images,
@@ -130,7 +135,7 @@ def allowed_file(filename):
 @tools_blueprint.route('/tools/download_compressed')
 @login_required
 def download_compressed():
-    upload_folder = current_app.config['UPLOAD_FOLDER']
+    upload_folder = current_app.config['UPLOAD_FOLDER'] + "/" + session['user_folder']
     zip_path = os.path.join(upload_folder, 'compressed_images.zip')
 
     with zipfile.ZipFile(zip_path, 'w') as zipf:
@@ -148,14 +153,21 @@ def download_compressed():
     )
 
 
-@tools_blueprint.route('/uploads/<filename>')
+@tools_blueprint.route('/uploads/<user_folder>/<filename>')
 @login_required
-def uploaded_file(filename):
+def uploaded_file(user_folder, filename):
     try:
-        response = send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
-        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-        response.headers['Pragma'] = 'no-cache'
-        response.headers['Expires'] = '0'
+        # Security check - only allow access to own folder
+        if session.get('user_folder') != user_folder:
+            return jsonify({'error': 'Unauthorized'}), 403
+
+        user_folder_path = os.path.join(current_app.config['UPLOAD_FOLDER'], user_folder)
+        response = send_from_directory(user_folder_path, filename)
+
+        # Add caching headers
+        response.headers['Cache-Control'] = 'public, max-age=31536000'
+        response.headers['ETag'] = f'"{hash(filename)}"'
+
         return response
     except Exception as e:
         current_app.logger.error(f"Error serving file {filename}: {str(e)}")

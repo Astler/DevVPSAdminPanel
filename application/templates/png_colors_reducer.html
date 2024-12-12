@@ -238,6 +238,15 @@
                 this.files = new Map(); // Store file metadata
                 this.processedImages = [];
                 this.setupEventListeners();
+
+                this.cache = new Map();
+                this.initCache();
+            }
+
+            async initCache() {
+                if ('caches' in window) {
+                    this.imageCache = await caches.open('reduced-images-cache');
+                }
             }
 
             setupEventListeners() {
@@ -399,6 +408,40 @@
                     'Reducing colors and optimizing images...';
             }
 
+
+            async cacheImage(url, blob, cacheKey) {
+                if (this.imageCache) {
+                    try {
+                        // Store in CacheStorage
+                        await this.imageCache.put(url, new Response(blob));
+                        // Store metadata
+                        this.cache.set(cacheKey, {
+                            url,
+                            timestamp: Date.now()
+                        });
+                        // Persist metadata to localStorage
+                        localStorage.setItem('image-cache-metadata',
+                            JSON.stringify(Array.from(this.cache.entries())));
+                    } catch (error) {
+                        console.error('Caching failed:', error);
+                    }
+                }
+            }
+
+            async getFromCache(url, cacheKey) {
+                if (this.imageCache) {
+                    try {
+                        const cachedResponse = await this.imageCache.match(url);
+                        if (cachedResponse) {
+                            return await cachedResponse.blob();
+                        }
+                    } catch (error) {
+                        console.error('Cache retrieval failed:', error);
+                    }
+                }
+                return null;
+            }
+
             async handleSubmit(e) {
                 e.preventDefault();
 
@@ -425,17 +468,22 @@
                     }
 
                     const data = await response.json();
-
                     if (data.error) {
                         throw new Error(data.error);
                     }
 
+                    // Cache the processed images
+                    for (const image of data.images) {
+                        if (image.success) {
+                            const imageResponse = await fetch(image.reduced);
+                            const blob = await imageResponse.blob();
+                            await this.cacheImage(image.reduced, blob, image.cacheKey);
+                        }
+                    }
+
                     processedCount = data.images.length;
                     this.updateProgress(processedCount, totalFiles);
-
                     this.processingDetails.textContent = 'Processing complete!';
-
-                    // New: Store processed image data
                     this.processedImages = data.images;
 
                     setTimeout(() => {
@@ -466,21 +514,11 @@
                     <div class="preview-name">${image.originalName || 'Reduced image'}</div>
                     <button class="preview-download" data-url="${reducedUrl}" data-name="${image.originalName}">Download</button>
                 `;
-
-                        // New: Add event listener for individual file download
                         result.querySelector('.preview-download').addEventListener('click', (e) => {
-                            let downloadUrl = e.target.dataset.url;
+                            // Get just the pathname from the URL and construct it relative to current origin
+                            const fullUrl = new URL(e.target.dataset.url);
+                            const downloadUrl = `${window.location.origin}${fullUrl.pathname}`;
                             const fileName = e.target.dataset.name;
-
-                            // Convert HTTP to HTTPS if needed
-                            if (downloadUrl.startsWith('http:')) {
-                                downloadUrl = downloadUrl.replace('http:', 'https:');
-                            }
-
-                            // Make URL absolute if it's relative
-                            if (downloadUrl.startsWith('/')) {
-                                downloadUrl = `${window.location.origin}${downloadUrl}`;
-                            }
 
                             this.downloadFile(downloadUrl, fileName);
                         });
@@ -502,76 +540,40 @@
 
             async downloadFile(url, fileName) {
                 try {
-                    // Validate URL
-                    if (!url) {
-                        throw new Error('URL is required');
+                    // Try to get from cache first
+                    const cacheKey = url.split('/').pop().split('_')[1].split('.')[0];
+                    let blob = await this.getFromCache(url, cacheKey);
+
+                    if (!blob) {
+                        // If not in cache, fetch from server
+                        const response = await fetch(url, {
+                            credentials: 'same-origin',
+                            mode: 'cors'
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        blob = await response.blob();
+                        // Cache the downloaded file
+                        await this.cacheImage(url, blob, cacheKey);
                     }
 
-                    // Add fetch options with appropriate headers and credentials
-                    const options = {
-                        method: 'GET',
-                        headers: {
-                            'Accept': '*/*',
-                        },
-                        // Include credentials if needed for same-origin requests
-                        credentials: 'same-origin',
-                        // Add mode for explicit CORS handling
-                        mode: 'cors',
-                    };
-
-                    // Make the request with timeout
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-
-                    const response = await fetch(url, {
-                        ...options,
-                        signal: controller.signal
-                    });
-
-                    clearTimeout(timeoutId);
-
-                    // Check if response is ok (status in 200-299 range)
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    // Get the blob with type checking
-                    const contentType = response.headers.get('content-type');
-                    const blob = await response.blob();
-
-                    // Validate blob
-                    if (blob.size === 0) {
-                        throw new Error('Retrieved file is empty');
-                    }
-
-                    // Create and click download link
                     const downloadUrl = URL.createObjectURL(blob);
                     const downloadLink = document.createElement('a');
 
                     try {
                         downloadLink.href = downloadUrl;
-                        downloadLink.download = fileName || 'download';
-                        downloadLink.style.display = 'none';
+                        downloadLink.download = fileName;
                         document.body.appendChild(downloadLink);
                         downloadLink.click();
                     } finally {
-                        // Clean up
                         document.body.removeChild(downloadLink);
                         URL.revokeObjectURL(downloadUrl);
                     }
-
-                    return true;
                 } catch (error) {
-                    if (error.name === 'AbortError') {
-                        throw new Error('Request timed out');
-                    }
-
-                    // Handle specific fetch errors
-                    if (!navigator.onLine) {
-                        throw new Error('No internet connection');
-                    }
-
-                    throw new Error(`Download failed: ${error.message}`);
+                    this.showError(`Download failed: ${error.message}`);
                 }
             }
 

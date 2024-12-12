@@ -491,16 +491,76 @@
 
             async downloadFile(url, fileName) {
                 try {
-                    const response = await fetch(url);
+                    // Validate URL
+                    if (!url) {
+                        throw new Error('URL is required');
+                    }
+
+                    // Add fetch options with appropriate headers and credentials
+                    const options = {
+                        method: 'GET',
+                        headers: {
+                            'Accept': '*/*',
+                        },
+                        // Include credentials if needed for same-origin requests
+                        credentials: 'same-origin',
+                        // Add mode for explicit CORS handling
+                        mode: 'cors',
+                    };
+
+                    // Make the request with timeout
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+                    const response = await fetch(url, {
+                        ...options,
+                        signal: controller.signal
+                    });
+
+                    clearTimeout(timeoutId);
+
+                    // Check if response is ok (status in 200-299 range)
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    // Get the blob with type checking
+                    const contentType = response.headers.get('content-type');
                     const blob = await response.blob();
+
+                    // Validate blob
+                    if (blob.size === 0) {
+                        throw new Error('Retrieved file is empty');
+                    }
+
+                    // Create and click download link
+                    const downloadUrl = URL.createObjectURL(blob);
                     const downloadLink = document.createElement('a');
-                    downloadLink.href = URL.createObjectURL(blob);
-                    downloadLink.setAttribute('download', fileName);
-                    document.body.appendChild(downloadLink);
-                    downloadLink.click();
-                    document.body.removeChild(downloadLink);
+
+                    try {
+                        downloadLink.href = downloadUrl;
+                        downloadLink.download = fileName || 'download';
+                        downloadLink.style.display = 'none';
+                        document.body.appendChild(downloadLink);
+                        downloadLink.click();
+                    } finally {
+                        // Clean up
+                        document.body.removeChild(downloadLink);
+                        URL.revokeObjectURL(downloadUrl);
+                    }
+
+                    return true;
                 } catch (error) {
-                    this.showError(`Error downloading file: ${error.message}`);
+                    if (error.name === 'AbortError') {
+                        throw new Error('Request timed out');
+                    }
+
+                    // Handle specific fetch errors
+                    if (!navigator.onLine) {
+                        throw new Error('No internet connection');
+                    }
+
+                    throw new Error(`Download failed: ${error.message}`);
                 }
             }
 

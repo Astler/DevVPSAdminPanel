@@ -472,10 +472,19 @@
                         throw new Error(data.error);
                     }
 
+                    // Ensure HTTPS URLs
+                    data.images = data.images.map(image => {
+                        if (image.reduced && image.reduced.startsWith('http:')) {
+                            image.reduced = image.reduced.replace('http:', 'https:');
+                        }
+                        return image;
+                    });
+
                     // Cache the processed images
                     for (const image of data.images) {
                         if (image.success) {
                             const imageResponse = await fetch(image.reduced);
+                            if (!imageResponse.ok) throw new Error('Failed to fetch image');
                             const blob = await imageResponse.blob();
                             await this.cacheImage(image.reduced, blob, image.cacheKey);
                         }

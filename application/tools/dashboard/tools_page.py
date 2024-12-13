@@ -83,7 +83,8 @@ def colors_reducer():
                         cache_url = url_for('tools_blueprint.uploaded_file',
                                             filename=reduced_filename,
                                             user_folder=session['user_folder'],
-                                            _external=True)
+                                            _external=True,
+                                            _scheme='https')
                         processed_images.append({
                             'reduced': cache_url,
                             'originalName': file.filename,

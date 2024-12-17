@@ -3,73 +3,74 @@ from PIL import Image
 from flask import current_app
 from sklearn.cluster import KMeans
 
+def count_colors(image_path):
+    with Image.open(image_path) as img:
+        if 'A' in img.getbands():
+            img = img.convert('RGB')
+        colors = img.getcolors()
+        return len(colors) if colors else 0
+
 
 def reduce_image_colors(original_path: str, num_colors: int, output_path: str) -> None:
     try:
         with Image.open(original_path) as img:
-            original_format = img.format
             has_alpha = 'A' in img.getbands()
 
             if has_alpha:
-                # Store original alpha for later
-                alpha = np.array(img.split()[-1])
-                # Process only RGB data
+                alpha = img.split()[-1]
                 img = img.convert('RGB')
 
-            # Convert to array without any preprocessing
-            pixels = np.asarray(img, dtype=np.float32)
-            original_shape = pixels.shape
-            pixels = pixels.reshape(-1, 3)
+            # Convert to numpy array
+            img_array = np.array(img)
+            pixels = img_array.reshape(-1, 3)
 
-            # Exact clustering without any randomness
+            # Use KMeans with careful initialization
             kmeans = KMeans(
                 n_clusters=num_colors,
-                random_state=42,
-                n_init=1,
-                max_iter=1000,
-                tol=0
+                init='k-means++',  # Better initialization
+                n_init=10,
+                max_iter=300
             ).fit(pixels)
 
-            # Get exact colors without any rounding
-            colors = np.uint8(np.round(kmeans.cluster_centers_))
-            labels = kmeans.labels_
-            new_pixels = colors[labels]
-            new_pixels = new_pixels.reshape(original_shape)
+            # Get color palette
+            palette = np.uint8(kmeans.cluster_centers_)
 
-            # Convert back to image without any interpolation
-            new_image = Image.fromarray(new_pixels, mode='RGB')
+            # Map to new colors
+            quantized = palette[kmeans.labels_].reshape(img_array.shape)
+            new_img = Image.fromarray(quantized)
 
             if has_alpha:
-                new_image = new_image.convert('RGBA')
-                # Binary alpha for perfect edges
-                alpha_binary = np.uint8(alpha > 127) * 255
-                alpha_layer = Image.fromarray(alpha_binary, mode='L')
-                new_image.putalpha(alpha_layer)
+                new_img = new_img.convert('RGBA')
+                alpha = Image.eval(alpha, lambda x: 255 if x > 127 else 0)
+                new_img.putalpha(alpha)
 
-            # Format-specific perfect quality saves
-            if original_format in ('JPEG', 'JPG'):
-                new_image = new_image.convert('RGB')
-                new_image.save(output_path, original_format,
-                               quality=100,
-                               subsampling=0,
-                               optimize=False)
-            elif original_format == 'PNG':
-                new_image.save(output_path, format='PNG',
-                               optimize=False,
-                               compress_level=0)
-            elif original_format == 'GIF':
-                new_image.save(output_path, format='GIF',
-                               optimize=False)
-            elif original_format == 'WEBP':
-                new_image.save(output_path, format='WEBP',
-                               quality=100,
-                               lossless=True,
-                               method=6)
-            else:
-                new_image.save(output_path, format='PNG',
-                               optimize=False,
-                               compress_level=0)
+            new_img.save(output_path, 'PNG', optimize=False, compress_level=0)
 
     except Exception as e:
-        current_app.logger.error(f"Error processing image {original_path}: {str(e)}")
+        print(f"Error: {str(e)}")
         raise
+
+
+def count_colors(image_path):
+    with Image.open(image_path) as img:
+        if 'A' in img.getbands():
+            # Convert to RGB to count colors without alpha
+            img = img.convert('RGB')
+
+        # Get unique colors
+        colors = img.getcolors()
+        return len(colors) if colors else 0
+
+
+if __name__ == "__main__":
+    input_image = "input.jpg"  # Put your image name here
+    output_image = "output.png"
+    target_colors = 4  # Change this to test different color counts
+
+    print(f"Original colors: {count_colors(input_image)}")
+
+    reduce_image_colors(input_image, target_colors, output_image)
+
+    result_colors = count_colors(output_image)
+    print(f"Result colors: {result_colors}")
+    print(f"Target met: {result_colors == target_colors}")

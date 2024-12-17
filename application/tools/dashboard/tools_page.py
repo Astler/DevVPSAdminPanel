@@ -37,7 +37,6 @@ def tools():
 
 
 @tools_blueprint.route('/tools/colors_reducer', methods=['GET', 'POST'])
-@login_required
 def colors_reducer():
     if request.method == 'GET':
         return render_template('png_colors_reducer.html')

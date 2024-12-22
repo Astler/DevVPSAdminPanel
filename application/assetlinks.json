@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "net.astler.pressfpixel",
+    "sha256_cert_fingerprints": ["FF:97:96:A6:06:BE:4D:89:D2:8D:BD:CE:6F:B0:78:6F:BA:96:A3:A3:2B:E9:10:C5:EF:26:22:AE:A1:DF:D4:EC"]
+  }
+}]
